@@ -4,7 +4,13 @@
   "description": "script wiz lib core",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "wp-umd": "npx webpack --mode production --config webpack.config.umd.js",
+    "wp-umd-dev": "npx webpack --mode development --config webpack.config.umd.js",
+    "wp-common": "npx webpack --mode production --config webpack.config.js",
+    "wp-common-dev": "npx webpack --mode development --config webpack.config.js",
+    "wp": "yarn wp-umd && yarn wp-common",
+    "wpdev": "yarn wp-umd-dev && yarn wp-common-dev",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.7",
@@ -36,6 +42,7 @@
     "@script-wiz/wiz-data": "^1.0.0",
     "bcrypto": "^5.4.0",
     "bn.js": "^5.2.0",
+    "crypto-js": "^4.1.1",
     "elliptic": "^6.5.4"
   }
 }
