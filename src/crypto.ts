@@ -2,10 +2,25 @@ import CryptoJS from "crypto-js";
 import elliptic from "elliptic";
 import BN from "bn.js";
 import WizData from "@script-wiz/wiz-data";
-import * as tapRoot from "../taproot";
 import bcrypto from "bcrypto";
 
 // TO DO @afarukcali review
+
+export const publicKeyTweakCheckWithPrefix = (pubkey: WizData, tweak: WizData, expect: WizData): boolean => {
+  if (pubkey.bytes.length !== 32) {
+    throw "Pubkey length must be equal 32 byte";
+  }
+
+  const expectKeyWithoutPrefix = expect.bytes.slice(1, expect.bytes.length);
+  const expectKeyWithoutPrefixData = WizData.fromBytes(expectKeyWithoutPrefix);
+
+  return bcrypto.schnorr.publicKeyTweakCheck(
+    Buffer.from(pubkey.hex, "hex"),
+    Buffer.from(tweak.hex, "hex"),
+    Buffer.from(expectKeyWithoutPrefixData.hex, "hex"),
+    expect.bytes[0] === 3
+  );
+};
 
 export const ripemd160 = (wizData: WizData): CryptoJS.lib.WordArray => {
   return CryptoJS.RIPEMD160(CryptoJS.enc.Hex.parse(wizData.hex));
@@ -107,7 +122,7 @@ export const tweakVerify = (wizData: WizData, wizData2: WizData, wizData3: WizDa
 
   if (vchTweakedKey.bytes[0] !== 2 && vchTweakedKey.bytes[0] !== 3) throw "Tweaked key must start with 0x02 or 0x03";
 
-  const isChecked: boolean = tapRoot.publicKeyTweakCheckWithPrefix(internalKey, vchTweak, vchTweakedKey);
+  const isChecked: boolean = publicKeyTweakCheckWithPrefix(internalKey, vchTweak, vchTweakedKey);
 
   return WizData.fromNumber(isChecked ? 1 : 0);
 };

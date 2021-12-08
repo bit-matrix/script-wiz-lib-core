@@ -1,7 +1,6 @@
 import WizData from "@script-wiz/wiz-data";
 import BN from "bn.js";
-import { MAX_INTEGER_64, MIN_INTEGER_64, NEGATIVE_1_64, ZERO_64 } from "../utils";
-import { convert64, numToLE64 } from "./conversion";
+import { MAX_INTEGER_64, MIN_INTEGER_64, NEGATIVE_1_64, ZERO_64 } from "./utils";
 
 export const add64 = (wizData: WizData, wizData2: WizData): WizData[] => {
   if (wizData.bytes.length != 8 || wizData2.bytes.length != 8) throw "Input bytes length must be equal 8 byte";

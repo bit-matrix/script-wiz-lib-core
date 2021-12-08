@@ -1,6 +1,6 @@
 import WizData from "@script-wiz/wiz-data";
-import { TxInput, TxOutput } from "../model/TxData";
-import * as crypto from "../core/crypto";
+import { TxInput, TxOutput } from "./model/TxData";
+import * as crypto from "./crypto";
 
 export const inspectInputOutPoint = (wizData: WizData, txInputs: TxInput[]): WizData[] => {
   let currentTxInputIndex = wizData.number;

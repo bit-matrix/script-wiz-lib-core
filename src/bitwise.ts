@@ -1,5 +1,5 @@
 import WizData from "@script-wiz/wiz-data";
-import { flipbits } from "../utils";
+import { flipbits } from "./utils";
 
 export const invert = (wizData: WizData): WizData => {
   const complement = flipbits(wizData.bin);

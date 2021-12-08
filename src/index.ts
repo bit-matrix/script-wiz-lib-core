@@ -6,7 +6,8 @@ import * as crypto from "./crypto";
 import * as flow from "./flow";
 import * as introspection from "./introspection";
 import * as locktime from "./locktime";
+import * as model from "./model";
 import * as splices from "./splices";
 import * as stacks from "./stacks";
 
-export { arithmetics, bitwise, conversion, arithmetics64, crypto, flow, introspection, locktime, splices, stacks };
+export { arithmetics, bitwise, conversion, arithmetics64, crypto, flow, introspection, locktime, model, splices, stacks };
