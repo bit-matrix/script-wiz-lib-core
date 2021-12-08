@@ -6,6 +6,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "devDependencies": {
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/preset-typescript": "^7.13.0",
+    "@types/crypto-js": "^4.0.1",
+    "@types/elliptic": "^6.4.12",
+    "@types/jest": "^26.0.23",
+    "@types/secp256k1": "^4.0.3",
+    "babel-loader": "^8.0.6",
+    "jest": "^26.6.3",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.12"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bit-matrix/script-wiz-lib-core.git"
