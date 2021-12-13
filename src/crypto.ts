@@ -3,24 +3,9 @@ import elliptic from "elliptic";
 import BN from "bn.js";
 import WizData from "@script-wiz/wiz-data";
 import bcrypto from "bcrypto";
+import { publicKeyTweakCheckWithPrefix } from "./taproot";
 
 // TO DO @afarukcali review
-
-export const publicKeyTweakCheckWithPrefix = (pubkey: WizData, tweak: WizData, expect: WizData): boolean => {
-  if (pubkey.bytes.length !== 32) {
-    throw "Pubkey length must be equal 32 byte";
-  }
-
-  const expectKeyWithoutPrefix = expect.bytes.slice(1, expect.bytes.length);
-  const expectKeyWithoutPrefixData = WizData.fromBytes(expectKeyWithoutPrefix);
-
-  return bcrypto.schnorr.publicKeyTweakCheck(
-    Buffer.from(pubkey.hex, "hex"),
-    Buffer.from(tweak.hex, "hex"),
-    Buffer.from(expectKeyWithoutPrefixData.hex, "hex"),
-    expect.bytes[0] === 3
-  );
-};
 
 export const ripemd160 = (wizData: WizData): CryptoJS.lib.WordArray => {
   return CryptoJS.RIPEMD160(CryptoJS.enc.Hex.parse(wizData.hex));

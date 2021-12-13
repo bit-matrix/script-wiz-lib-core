@@ -8,5 +8,6 @@ import * as locktime from "./locktime";
 import * as model from "./model";
 import * as splices from "./splices";
 import * as stacks from "./stacks";
+import * as taproot from "./taproot";
 
-export { arithmetics, bitwise, conversion, arithmetics64, crypto, introspection, locktime, model, splices, stacks };
+export { arithmetics, bitwise, conversion, arithmetics64, crypto, introspection, locktime, model, splices, stacks, taproot };
