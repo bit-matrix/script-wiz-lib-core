@@ -9,6 +9,5 @@ import * as model from "./model";
 import * as splices from "./splices";
 import * as stacks from "./stacks";
 import * as taproot from "./taproot";
-import WizData from "@script-wiz/wiz-data";
 
-export { arithmetics, bitwise, conversion, arithmetics64, crypto, introspection, locktime, model, splices, stacks, taproot, WizData };
+export { arithmetics, bitwise, conversion, arithmetics64, crypto, introspection, locktime, model, splices, stacks, taproot };
