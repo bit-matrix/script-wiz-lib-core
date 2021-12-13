@@ -1,6 +1,6 @@
 import { tagHash, tapRoot, treeHelper, tweakAdd } from ".";
 import WizData from "@script-wiz/wiz-data";
-import { VM_NETWORK, VM_NETWORK_VERSION } from "../opcodes/model/VM";
+import { TAPROOT_VERSION } from "../model";
 
 // test("xxx", () => {
 //   const x = "038a759932b19c2bf441e4e37a0243f03364df38cec1c658743dffa56c334dfb2d";
@@ -84,5 +84,5 @@ test("demo", () => {
 
   // const treeHelperResult = treeHelper(scripts, version);
 
-  console.log(tapRoot(pubkey, scripts, { ver: VM_NETWORK_VERSION.TAPSCRIPT, network: VM_NETWORK.BTC }));
+  console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.BITCOIN));
 });
