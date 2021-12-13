@@ -1,16 +1,10 @@
 {
   "name": "@script-wiz/lib-core",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "script wiz lib core",
   "main": "index.js",
   "scripts": {
-    "wp-umd": "npx webpack --mode production --config webpack.config.umd.js",
-    "wp-umd-dev": "npx webpack --mode development --config webpack.config.umd.js",
-    "wp-common": "npx webpack --mode production --config webpack.config.js",
-    "wp-common-dev": "npx webpack --mode development --config webpack.config.js",
-    "wp": "yarn wp-umd && yarn wp-common",
-    "wpdev": "yarn wp-umd-dev && yarn wp-common-dev",
-    "test": "jest"
+    "npm-pubish": "npm version patch && npm publish --access public"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.7",
