@@ -1,4 +1,3 @@
-import { ParseResult, ParseResultData } from "./ParseResult";
-import { WizDataList } from "./WizDataList";
+import { TAPROOT_VERSION } from "./TAPROOT_VERSION";
 import { TxData } from "./TxData";
-export { WizDataList, ParseResult, ParseResultData, TxData };
+export { TxData, TAPROOT_VERSION };
