@@ -128,6 +128,20 @@ export const shnorrSigVerify = (sig: WizData, msg: WizData, pubkey: WizData): Wi
   }
 };
 
+type Keys = {
+  privateKey: WizData,
+  publicKey: WizData
+}
+
+export const secp256k1KeyGenerator = (compressed : boolean = true): Keys => {
+  const priKey = bcrypto.secp256k1.privateKeyGenerate();
+  const pubKey = bcrypto.secp256k1.publicKeyCreate(priKey, compressed);
+  const priKeyHex = priKey.toString("hex");
+  const pubKeyHex = pubKey.toString("hex");
+
+  return {privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex)};
+}
+
 // const ECDSA = (messageHash: string, publicKey: string): string => {
 //   const EC = elliptic.ec;
 
