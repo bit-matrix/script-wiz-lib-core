@@ -142,6 +142,25 @@ export const secp256k1KeyGenerator = (compressed : boolean = true): Keys => {
   return {privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex)};
 }
 
+export const schnorrKeyGenerator = (compressed : boolean = true): Keys => {
+  const priKey = bcrypto.schnorr.privateKeyGenerate();
+  const pubKey = bcrypto.schnorr.publicKeyCreate(priKey);
+  const priKeyHex = priKey.toString("hex");
+  let pubKeyHex : string = "";
+
+  if(!compressed){
+    const pubKeyAxis = bcrypto.schnorr.publicKeyExport(pubKey);
+    const xAxisHex = pubKeyAxis.x.toString("hex");
+    const yAxisHex = pubKeyAxis.y.toString("hex");
+    pubKeyHex = "04" + xAxisHex + yAxisHex;
+  }
+  else{
+    pubKeyHex = pubKey.toString("hex");
+  }
+
+  return {privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex)};
+}
+
 // const ECDSA = (messageHash: string, publicKey: string): string => {
 //   const EC = elliptic.ec;
 
