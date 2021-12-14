@@ -1,6 +1,6 @@
 // import { numberTestData } from "./data/number";
 import WizData from "@script-wiz/wiz-data";
-import { ecdsaVerify, hash160, hash256, ripemd160, sha1, sha256 } from "../crypto";
+import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, sha256 } from "../crypto";
 
 // test("Crypto ripemd160 test", () => {
 //   const wizData: WizData = WizData.fromHex("ffffffff");
@@ -52,14 +52,20 @@ import { ecdsaVerify, hash160, hash256, ripemd160, sha1, sha256 } from "../crypt
 //   expect(signature.toString()).toBe("02358e9106e9c481380f7060385afec5208603a2038a0443d5826fd144d88809");
 // });
 
-test("Crypto ecdsaVerify test", () => {
-  const signatureData: WizData = WizData.fromHex(
-    "3044022002748547ba97e986d26b48dc2093c21f04334aea4694470328d605c15971a8f302207501b30f114d1c27e5d8fa903635d9485dca60c705dbdf2a12daf795239d5e5e"
-  );
-  const messageData: WizData = WizData.fromHex("68656c6c6ff09f8c8e");
-  const publicKeyData: WizData = WizData.fromHex("02211862a1f993b4578d595c3e00b0935cd9ccc29a869cab7a680e36efc2e7b548");
+// test("Crypto ecdsaVerify test", () => {
+//   const signatureData: WizData = WizData.fromHex(
+//     "3044022002748547ba97e986d26b48dc2093c21f04334aea4694470328d605c15971a8f302207501b30f114d1c27e5d8fa903635d9485dca60c705dbdf2a12daf795239d5e5e"
+//   );
+//   const messageData: WizData = WizData.fromHex("68656c6c6ff09f8c8e");
+//   const publicKeyData: WizData = WizData.fromHex("02211862a1f993b4578d595c3e00b0935cd9ccc29a869cab7a680e36efc2e7b548");
 
-  const signature = ecdsaVerify(signatureData, messageData, publicKeyData);
+//   const signature = ecdsaVerify(signatureData, messageData, publicKeyData);
 
-  expect(signature.number).toBe(1);
+//   expect(signature.number).toBe(1);
+// });
+
+test("key generator", () => {
+  const keys = secp256k1KeyGenerator(false);
+  console.log(keys.publicKey.bytes.length);
+  console.log(keys.publicKey.bytes[0] === 4);
 });
