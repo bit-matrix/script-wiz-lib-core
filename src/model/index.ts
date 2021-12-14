@@ -1,4 +1,4 @@
 import { TAPROOT_VERSION } from "./TAPROOT_VERSION";
-import { TxData } from "./TxData";
+import { TxInput, TxOutput, TxData } from "./TxData";
 
-export { TxData, TAPROOT_VERSION };
+export { TxInput, TxOutput, TxData, TAPROOT_VERSION };
