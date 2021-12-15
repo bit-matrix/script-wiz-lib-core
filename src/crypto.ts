@@ -161,6 +161,15 @@ export const schnorrKeyGenerator = (compressed : boolean = true): Keys => {
   return {privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex)};
 }
 
+export const secp256k1Sign = (message: WizData, privateKey: WizData): WizData => {
+  const bufferMessage = Buffer.from(message.hex, "hex");
+  const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
+  const sign = bcrypto.secp256k1.sign(bufferMessage, bufferPrivateKey);
+  const hexSign = sign.toString("hex");
+  
+  return WizData.fromHex(hexSign); 
+}
+
 // const ECDSA = (messageHash: string, publicKey: string): string => {
 //   const EC = elliptic.ec;
 

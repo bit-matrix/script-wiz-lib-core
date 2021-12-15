@@ -1,6 +1,6 @@
 // import { numberTestData } from "./data/number";
 import WizData from "@script-wiz/wiz-data";
-import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, sha256, schnorrKeyGenerator } from "../crypto";
+import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, sha256, schnorrKeyGenerator, signPrivateKey, secp256k1Sign } from "../crypto";
 
 // test("Crypto ripemd160 test", () => {
 //   const wizData: WizData = WizData.fromHex("ffffffff");
@@ -64,16 +64,22 @@ import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, 
 //   expect(signature.number).toBe(1);
 // });
 
-// test("key generator", () => {
+// test("secp256k1 key generator", () => {
 //   const keys = secp256k1KeyGenerator(false);
 //   console.log(keys.publicKey.bytes.length);
 //   console.log(keys.publicKey.bytes[0] === 4);
 // });
 
+// test("schnorr key generator", () => {
+//   const keys = schnorrKeyGenerator(false);
+//   console.log(keys);
+//   console.log(keys.publicKey.bytes.length);
+//   console.log(keys.publicKey.bytes[0] === 4);
+// });
 
-test("schnorr key generator", () => {
-  const keys = schnorrKeyGenerator(false);
-  console.log(keys);
-  console.log(keys.publicKey.bytes.length);
-  console.log(keys.publicKey.bytes[0] === 4);
+test("secp256k1 sign", () => {
+  const message = WizData.fromText("merhaba");
+  const privateKey = secp256k1KeyGenerator().privateKey;
+  const result = secp256k1Sign(message, privateKey);
+  console.log(result);
 });
