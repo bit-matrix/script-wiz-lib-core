@@ -5,6 +5,7 @@ import { Taproot } from "./model";
 import * as segwit_addr from "../bech32/segwit_addr";
 import bcrypto from "bcrypto";
 import { TAPROOT_VERSION } from "../model";
+import varuint from "varuint-bitcoin";
 
 // type TreeHelper = {
 //   data: string;
@@ -67,10 +68,16 @@ export const treeHelper = (scripts: WizData[], version: string): string => {
   // const tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
 
   scripts.forEach((script) => {
-    const scriptLength = WizData.fromNumber(script.hex.length / 2).hex;
+    const scriptLengthWizData = WizData.fromNumber(script.bytes.length);
+    const lengthByteSize = varuint.encodingLength(script.bytes.length);
 
-    const scriptData = version + scriptLength + script.hex;
+    let scriptLengthHex = "";
 
+    for (let index = 0; index < lengthByteSize; index++) {
+      scriptLengthHex += scriptLengthWizData.bytes[index].toString(16);
+    }
+
+    const scriptData = version + scriptLengthHex + script.hex;
     const h = tagHash(leaftag, WizData.fromHex(scriptData));
 
     treeHelperResultHex += h;
