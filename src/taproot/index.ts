@@ -68,16 +68,9 @@ export const treeHelper = (scripts: WizData[], version: string): string => {
   // const tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
 
   scripts.forEach((script) => {
-    const scriptLengthWizData = WizData.fromNumber(script.bytes.length);
-    const lengthByteSize = varuint.encodingLength(script.bytes.length);
+    const scriptLength = varuint.encode(script.bytes.length).toString("hex");
 
-    let scriptLengthHex = "";
-
-    for (let index = 0; index < lengthByteSize; index++) {
-      scriptLengthHex = scriptLengthWizData.hex.substring(0, index + 1 * 2);
-    }
-
-    const scriptData = version + scriptLengthHex + script.hex;
+    const scriptData = version + scriptLength + script.hex;
     const h = tagHash(leaftag, WizData.fromHex(scriptData));
 
     treeHelperResultHex += h;
