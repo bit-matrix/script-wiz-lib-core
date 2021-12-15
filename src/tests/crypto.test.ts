@@ -1,6 +1,6 @@
 // import { numberTestData } from "./data/number";
 import WizData from "@script-wiz/wiz-data";
-import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, sha256, schnorrKeyGenerator, signPrivateKey, secp256k1Sign } from "../crypto";
+import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, sha256, schnorrKeyGenerator, secp256k1Sign } from "../crypto";
 
 // test("Crypto ripemd160 test", () => {
 //   const wizData: WizData = WizData.fromHex("ffffffff");
