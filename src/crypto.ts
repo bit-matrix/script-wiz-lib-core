@@ -136,6 +136,7 @@ type Keys = {
 export const secp256k1KeyGenerator = (compressed : boolean = true): Keys => {
   const priKey = bcrypto.secp256k1.privateKeyGenerate();
   const pubKey = bcrypto.secp256k1.publicKeyCreate(priKey, compressed);
+
   const priKeyHex = priKey.toString("hex");
   const pubKeyHex = pubKey.toString("hex");
 
@@ -145,6 +146,7 @@ export const secp256k1KeyGenerator = (compressed : boolean = true): Keys => {
 export const schnorrKeyGenerator = (compressed : boolean = true): Keys => {
   const priKey = bcrypto.schnorr.privateKeyGenerate();
   const pubKey = bcrypto.schnorr.publicKeyCreate(priKey);
+
   const priKeyHex = priKey.toString("hex");
   let pubKeyHex : string = "";
 
@@ -164,6 +166,7 @@ export const schnorrKeyGenerator = (compressed : boolean = true): Keys => {
 export const secp256k1Sign = (message: WizData, privateKey: WizData): WizData => {
   const bufferMessage = Buffer.from(message.hex, "hex");
   const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
+
   const sign = bcrypto.secp256k1.sign(bufferMessage, bufferPrivateKey);
   const hexSign = sign.toString("hex");
 
@@ -174,10 +177,21 @@ export const schnorrSign = (message: WizData, privateKey: WizData): WizData => {
   const bufferMessage = Buffer.from(message.hex, "hex");
   const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
   //const aux = Buffer.from("ffffffffffffffffffffffffffffffff", "hex");
+
   const sign = bcrypto.schnorr.sign(bufferMessage, bufferPrivateKey);
   const hexSign = sign.toString("hex");
   
   return WizData.fromHex(hexSign); 
+}
+
+export const secp256k1Verify = (message: WizData, signature: WizData, publicKey: WizData) : WizData => {
+  const bufferMessage = Buffer.from(message.hex, "hex");
+  const bufferSignature = Buffer.from(signature.hex, "hex");
+  const bufferPublicKey = Buffer.from(publicKey.hex, "hex");
+
+  const verify = bcrypto.secp256k1.verify(bufferMessage, bufferSignature, bufferPublicKey);
+
+  return WizData.fromNumber(verify ? 1 : 0);
 }
 
 // const ECDSA = (messageHash: string, publicKey: string): string => {
