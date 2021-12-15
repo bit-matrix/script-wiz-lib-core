@@ -11,3 +11,13 @@ export declare const ecdsaVerify: (sig: WizData, msg: WizData, pubkey: WizData) 
 export declare const checkSig: (wizData: WizData, wizData2: WizData) => WizData;
 export declare const tweakVerify: (wizData: WizData, wizData2: WizData, wizData3: WizData) => WizData;
 export declare const shnorrSigVerify: (sig: WizData, msg: WizData, pubkey: WizData) => WizData;
+declare type Keys = {
+    privateKey: WizData;
+    publicKey: WizData;
+};
+export declare const secp256k1KeyGenerator: (compressed?: boolean) => Keys;
+export declare const schnorrKeyGenerator: (compressed?: boolean) => Keys;
+export declare const secp256k1Sign: (message: WizData, privateKey: WizData) => WizData;
+export declare const schnorrSign: (message: WizData, privateKey: WizData) => WizData;
+export declare const secp256k1Verify: (message: WizData, signature: WizData, publicKey: WizData) => WizData;
+export {};
