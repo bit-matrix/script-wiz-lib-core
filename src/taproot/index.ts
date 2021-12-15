@@ -74,9 +74,7 @@ export const treeHelper = (scripts: WizData[], version: string): string => {
     let scriptLengthHex = "";
 
     for (let index = 0; index < lengthByteSize; index++) {
-      scriptLengthHex += scriptLengthWizData.bytes[index].toString(16);
-
-      if (scriptLengthHex.length === 1) scriptLengthHex = "0" + scriptLengthHex;
+      scriptLengthHex += scriptLengthWizData.hex.substring(0, index + 1 * 2);
     }
 
     const scriptData = version + scriptLengthHex + script.hex;
