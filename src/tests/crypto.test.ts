@@ -64,22 +64,33 @@ import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, 
 //   expect(signature.number).toBe(1);
 // });
 
-// test("secp256k1 key generator", () => {
-//   const keys = secp256k1KeyGenerator(false);
-//   console.log(keys.publicKey.bytes.length);
-//   console.log(keys.publicKey.bytes[0] === 4);
-// });
+test("secp256k1 key generator", () => {
+  const uncompressedKeys = secp256k1KeyGenerator(false);
+  const compressedKeys = secp256k1KeyGenerator(true);
+  
+  expect(uncompressedKeys.publicKey.bytes.length).toBe(65);
+  expect(uncompressedKeys.publicKey.bytes[0]).toBe(4);
+  expect(uncompressedKeys.privateKey.bytes.length).toBe(32);
 
-// test("schnorr key generator", () => {
-//   const keys = schnorrKeyGenerator(false);
-//   console.log(keys);
-//   console.log(keys.publicKey.bytes.length);
-//   console.log(keys.publicKey.bytes[0] === 4);
-// });
-
-test("secp256k1 sign", () => {
-  const message = WizData.fromText("merhaba");
-  const privateKey = secp256k1KeyGenerator().privateKey;
-  const result = secp256k1Sign(message, privateKey);
-  console.log(result);
+  expect(compressedKeys.publicKey.bytes.length).toBe(33);
+  expect(compressedKeys.privateKey.bytes.length).toBe(32);
 });
+
+test("schnorr key generator", () => {
+  const uncompressedKeys = schnorrKeyGenerator(false);
+  const compressedKeys = schnorrKeyGenerator(true);
+
+  expect(uncompressedKeys.publicKey.bytes.length).toBe(65);
+  expect(uncompressedKeys.publicKey.bytes[0]).toBe(4);
+  expect(uncompressedKeys.privateKey.bytes.length).toBe(32);
+  
+  expect(compressedKeys.publicKey.bytes.length).toBe(32);
+  expect(compressedKeys.privateKey.bytes.length).toBe(32);
+});
+
+// test("secp256k1 sign", () => {
+//   const message = WizData.fromText("merhaba");
+//   const privateKey = secp256k1KeyGenerator().privateKey;
+//   const result = secp256k1Sign(message, privateKey);
+//   console.log(result);
+// });
