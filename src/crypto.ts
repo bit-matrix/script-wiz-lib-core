@@ -166,6 +166,16 @@ export const secp256k1Sign = (message: WizData, privateKey: WizData): WizData =>
   const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
   const sign = bcrypto.secp256k1.sign(bufferMessage, bufferPrivateKey);
   const hexSign = sign.toString("hex");
+
+  return WizData.fromHex(hexSign); 
+}
+
+export const schnorrSign = (message: WizData, privateKey: WizData): WizData => {
+  const bufferMessage = Buffer.from(message.hex, "hex");
+  const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
+  //const aux = Buffer.from("ffffffffffffffffffffffffffffffff", "hex");
+  const sign = bcrypto.schnorr.sign(bufferMessage, bufferPrivateKey);
+  const hexSign = sign.toString("hex");
   
   return WizData.fromHex(hexSign); 
 }
