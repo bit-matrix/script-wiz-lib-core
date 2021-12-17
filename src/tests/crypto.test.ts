@@ -1,6 +1,6 @@
 // import { numberTestData } from "./data/number";
 import WizData from "@script-wiz/wiz-data";
-import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, sha256, schnorrKeyGenerator, secp256k1Sign, schnorrSign } from "../crypto";
+import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, secp256k1CreatePublicKey, schnorrKeyGenerator, schnorrCreatePublicKey } from "../crypto";
 
 // test("Crypto ripemd160 test", () => {
 //   const wizData: WizData = WizData.fromHex("ffffffff");
@@ -97,7 +97,8 @@ import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, ripemd160, sha1, 
 
 test("schnorr sign", () => {
   // const message = WizData.fromHex("17d9136b9bfabe56ee84681bc9f192d076bb5981543c7cfe1cbc8b0362ac2da2");
-  const privateKey = secp256k1KeyGenerator();
+  const privateKey = schnorrKeyGenerator().privateKey;
   // const result = schnorrSign(message, privateKey);
-  console.log(privateKey);
+
+  console.log(schnorrCreatePublicKey(privateKey));
 });
