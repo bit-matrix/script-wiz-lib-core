@@ -21,4 +21,6 @@ export declare const schnorrKeyGenerator: () => Keys;
 export declare const secp256k1Sign: (message: WizData, privateKey: WizData) => WizData;
 export declare const schnorrSign: (message: WizData, privateKey: WizData) => WizData;
 export declare const secp256k1Verify: (message: WizData, signature: WizData, publicKey: WizData) => WizData;
+export declare const secp256k1CreatePublicKey: (privateKey: WizData) => Keys;
+export declare const schnorrCreatePublicKey: (privateKey: WizData) => Keys;
 export {};
