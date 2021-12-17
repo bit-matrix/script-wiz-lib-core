@@ -134,6 +134,11 @@ type Keys = {
   uncompressedPubKey: WizData;
 };
 
+type Signs = {
+  sign: WizData;
+  derEncodedSign: WizData;
+};
+
 export const secp256k1KeyGenerator = (): Keys => {
   const priKey = bcrypto.secp256k1.privateKeyGenerate();
   const pubKey = bcrypto.secp256k1.publicKeyCreate(priKey);
@@ -164,17 +169,20 @@ export const schnorrKeyGenerator = (): Keys => {
   return { privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex), uncompressedPubKey: WizData.fromHex(uncompressedPubKey) };
 };
 
-export const secp256k1Sign = (message: WizData, privateKey: WizData): WizData => {
+export const secp256k1Sign = (message: WizData, privateKey: WizData): Signs => {
   const bufferMessage = Buffer.from(message.hex, "hex");
   const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
 
   const sign = bcrypto.secp256k1.sign(bufferMessage, bufferPrivateKey);
   const hexSign = sign.toString("hex");
 
-  return WizData.fromHex(hexSign);
+  const derEncodeSign = bcrypto.secp256k1.signatureExport(sign);
+  const derEncodeSignHex = derEncodeSign.toString("hex");
+
+  return { sign: WizData.fromHex(hexSign), derEncodedSign: WizData.fromHex(derEncodeSignHex) };
 };
 
-export const schnorrSign = (message: WizData, privateKey: WizData): WizData => {
+export const schnorrSign = (message: WizData, privateKey: WizData): Signs => {
   const bufferMessage = Buffer.from(message.hex, "hex");
   const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
   //const aux = Buffer.from("ffffffffffffffffffffffffffffffff", "hex");
@@ -182,7 +190,10 @@ export const schnorrSign = (message: WizData, privateKey: WizData): WizData => {
   const sign = bcrypto.schnorr.sign(bufferMessage, bufferPrivateKey);
   const hexSign = sign.toString("hex");
 
-  return WizData.fromHex(hexSign);
+  const derEncodeSign = bcrypto.secp256k1.signatureExport(sign);
+  const derEncodeSignHex = derEncodeSign.toString("hex");
+
+  return { sign: WizData.fromHex(hexSign), derEncodedSign: WizData.fromHex(derEncodeSignHex) };
 };
 
 export const secp256k1Verify = (message: WizData, signature: WizData, publicKey: WizData): WizData => {
