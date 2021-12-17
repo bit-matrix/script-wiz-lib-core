@@ -129,39 +129,40 @@ export const shnorrSigVerify = (sig: WizData, msg: WizData, pubkey: WizData): Wi
 };
 
 type Keys = {
-  privateKey: WizData,
-  publicKey: WizData
-}
+  privateKey: WizData;
+  publicKey: WizData;
+  uncompressedPubKey: WizData;
+};
 
-export const secp256k1KeyGenerator = (compressed : boolean = true): Keys => {
+export const secp256k1KeyGenerator = (): Keys => {
   const priKey = bcrypto.secp256k1.privateKeyGenerate();
-  const pubKey = bcrypto.secp256k1.publicKeyCreate(priKey, compressed);
+  const pubKey = bcrypto.secp256k1.publicKeyCreate(priKey);
 
   const priKeyHex = priKey.toString("hex");
   const pubKeyHex = pubKey.toString("hex");
 
-  return {privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex)};
-}
+  const pubKeyAxis = bcrypto.secp256k1.publicKeyExport(pubKey);
+  const xAxisHex = pubKeyAxis.x.toString("hex");
+  const yAxisHex = pubKeyAxis.y.toString("hex");
+  const uncompressedPubKey = "04" + xAxisHex + yAxisHex;
 
-export const schnorrKeyGenerator = (compressed : boolean = true): Keys => {
+  return { privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex), uncompressedPubKey: WizData.fromHex(uncompressedPubKey) };
+};
+
+export const schnorrKeyGenerator = (): Keys => {
   const priKey = bcrypto.schnorr.privateKeyGenerate();
   const pubKey = bcrypto.schnorr.publicKeyCreate(priKey);
 
   const priKeyHex = priKey.toString("hex");
-  let pubKeyHex : string = "";
+  const pubKeyHex = pubKey.toString("hex");
 
-  if(!compressed){
-    const pubKeyAxis = bcrypto.schnorr.publicKeyExport(pubKey);
-    const xAxisHex = pubKeyAxis.x.toString("hex");
-    const yAxisHex = pubKeyAxis.y.toString("hex");
-    pubKeyHex = "04" + xAxisHex + yAxisHex;
-  }
-  else{
-    pubKeyHex = pubKey.toString("hex");
-  }
+  const pubKeyAxis = bcrypto.schnorr.publicKeyExport(pubKey);
+  const xAxisHex = pubKeyAxis.x.toString("hex");
+  const yAxisHex = pubKeyAxis.y.toString("hex");
+  const uncompressedPubKey = "04" + xAxisHex + yAxisHex;
 
-  return {privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex)};
-}
+  return { privateKey: WizData.fromHex(priKeyHex), publicKey: WizData.fromHex(pubKeyHex), uncompressedPubKey: WizData.fromHex(uncompressedPubKey) };
+};
 
 export const secp256k1Sign = (message: WizData, privateKey: WizData): WizData => {
   const bufferMessage = Buffer.from(message.hex, "hex");
@@ -170,8 +171,8 @@ export const secp256k1Sign = (message: WizData, privateKey: WizData): WizData =>
   const sign = bcrypto.secp256k1.sign(bufferMessage, bufferPrivateKey);
   const hexSign = sign.toString("hex");
 
-  return WizData.fromHex(hexSign); 
-}
+  return WizData.fromHex(hexSign);
+};
 
 export const schnorrSign = (message: WizData, privateKey: WizData): WizData => {
   const bufferMessage = Buffer.from(message.hex, "hex");
@@ -180,11 +181,11 @@ export const schnorrSign = (message: WizData, privateKey: WizData): WizData => {
 
   const sign = bcrypto.schnorr.sign(bufferMessage, bufferPrivateKey);
   const hexSign = sign.toString("hex");
-  
-  return WizData.fromHex(hexSign); 
-}
 
-export const secp256k1Verify = (message: WizData, signature: WizData, publicKey: WizData) : WizData => {
+  return WizData.fromHex(hexSign);
+};
+
+export const secp256k1Verify = (message: WizData, signature: WizData, publicKey: WizData): WizData => {
   const bufferMessage = Buffer.from(message.hex, "hex");
   const bufferSignature = Buffer.from(signature.hex, "hex");
   const bufferPublicKey = Buffer.from(publicKey.hex, "hex");
@@ -192,7 +193,7 @@ export const secp256k1Verify = (message: WizData, signature: WizData, publicKey:
   const verify = bcrypto.secp256k1.verify(bufferMessage, bufferSignature, bufferPublicKey);
 
   return WizData.fromNumber(verify ? 1 : 0);
-}
+};
 
 // const ECDSA = (messageHash: string, publicKey: string): string => {
 //   const EC = elliptic.ec;
