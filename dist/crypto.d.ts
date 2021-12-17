@@ -14,9 +14,10 @@ export declare const shnorrSigVerify: (sig: WizData, msg: WizData, pubkey: WizDa
 declare type Keys = {
     privateKey: WizData;
     publicKey: WizData;
+    uncompressedPubKey: WizData;
 };
-export declare const secp256k1KeyGenerator: (compressed?: boolean) => Keys;
-export declare const schnorrKeyGenerator: (compressed?: boolean) => Keys;
+export declare const secp256k1KeyGenerator: () => Keys;
+export declare const schnorrKeyGenerator: () => Keys;
 export declare const secp256k1Sign: (message: WizData, privateKey: WizData) => WizData;
 export declare const schnorrSign: (message: WizData, privateKey: WizData) => WizData;
 export declare const secp256k1Verify: (message: WizData, signature: WizData, publicKey: WizData) => WizData;
