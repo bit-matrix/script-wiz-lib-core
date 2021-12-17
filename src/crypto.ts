@@ -170,10 +170,19 @@ export const schnorrKeyGenerator = (): Keys => {
 };
 
 export const secp256k1Sign = (message: WizData, privateKey: WizData): Signs => {
+  if (privateKey.bytes.length !== 32) throw "Private key byte length must be 32.";
+
   const bufferMessage = Buffer.from(message.hex, "hex");
   const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
 
-  const sign = bcrypto.secp256k1.sign(bufferMessage, bufferPrivateKey);
+  let sign;
+
+  try {
+    sign = bcrypto.secp256k1.sign(bufferMessage, bufferPrivateKey);
+  } catch (err) {
+    throw "invalid message";
+  }
+
   const hexSign = sign.toString("hex");
 
   const derEncodeSign = bcrypto.secp256k1.signatureExport(sign);
@@ -183,11 +192,20 @@ export const secp256k1Sign = (message: WizData, privateKey: WizData): Signs => {
 };
 
 export const schnorrSign = (message: WizData, privateKey: WizData): Signs => {
+  if (privateKey.bytes.length !== 32) throw "Private key byte length must be 32.";
+
   const bufferMessage = Buffer.from(message.hex, "hex");
   const bufferPrivateKey = Buffer.from(privateKey.hex, "hex");
   //const aux = Buffer.from("ffffffffffffffffffffffffffffffff", "hex");
 
-  const sign = bcrypto.schnorr.sign(bufferMessage, bufferPrivateKey);
+  let sign;
+
+  try {
+    sign = bcrypto.schnorr.sign(bufferMessage, bufferPrivateKey);
+  } catch (err) {
+    throw "invalid message";
+  }
+
   const hexSign = sign.toString("hex");
 
   const derEncodeSign = bcrypto.secp256k1.signatureExport(sign);
@@ -207,9 +225,17 @@ export const secp256k1Verify = (message: WizData, signature: WizData, publicKey:
 };
 
 export const secp256k1CreatePublicKey = (privateKey: WizData): Keys => {
-  const privateKeyHex = Buffer.from(privateKey.hex, "hex");
+  if (privateKey.bytes.length !== 32) throw "Private key byte length must be 32.";
 
-  const pubKey = bcrypto.secp256k1.publicKeyCreate(privateKeyHex);
+  let pubKey;
+
+  try {
+    const privateKeyHex = Buffer.from(privateKey.hex, "hex");
+    pubKey = bcrypto.secp256k1.publicKeyCreate(privateKeyHex);
+  } catch (err) {
+    throw "invalid private key";
+  }
+
   const pubKeyHex = pubKey.toString("hex");
 
   const pubKeyAxis = bcrypto.secp256k1.publicKeyExport(pubKey);
@@ -223,9 +249,17 @@ export const secp256k1CreatePublicKey = (privateKey: WizData): Keys => {
 };
 
 export const schnorrCreatePublicKey = (privateKey: WizData): Keys => {
-  const privateKeyHex = Buffer.from(privateKey.hex, "hex");
+  if (privateKey.bytes.length !== 32) throw "Private key byte length must be 32.";
+  let pubKey;
 
-  const pubKey = bcrypto.schnorr.publicKeyCreate(privateKeyHex);
+  try {
+    const privateKeyHex = Buffer.from(privateKey.hex, "hex");
+
+    pubKey = bcrypto.schnorr.publicKeyCreate(privateKeyHex);
+  } catch (err) {
+    throw "invalid private key";
+  }
+
   const pubKeyHex = pubKey.toString("hex");
 
   const pubKeyAxis = bcrypto.schnorr.publicKeyExport(pubKey);
