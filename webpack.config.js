@@ -33,6 +33,20 @@ module.exports = (env) => {
           exclude: /node_modules/,
           loader: "babel-loader",
         },
+        {
+          test: /\.(c|cpp)$/,
+          use: [
+            {
+              loader: "wasm-loader",
+            },
+            {
+              loader: "c-cpp-modules-webpack-loader",
+              options: {
+                compiller: "-Os -s WASM=1 -s SIDE_MODULE=1",
+              },
+            },
+          ],
+        },
       ],
     },
     resolve: {
