@@ -36,14 +36,28 @@ export const LE64ToNum = (wizData: WizData): WizData => {
 
   if (inputBytes.length !== 8) throw "Input byte length must be equal 8 byte";
 
+  let inputArray = Array.from(wizData.bytes);
+  let i = 7;
+  while (i >= 0) {
+    if(inputArray[i] === 0){
+        inputArray.pop();
+          i--;
+      } else {
+        break;
+      }
+  }
+  
+  const lastElement = WizData.fromNumber(inputArray[inputArray.length - 1]);
+  const misingByte = (lastElement.bytes.length > 1 ? 1 : 0);
+
   const inputBN = new BN(wizData.bin, 2);
 
-  const inputBnByteLength = inputBN.byteLength();
+  const inputBnByteLength = inputBN.byteLength() + misingByte;
 
   if (wizData.bin.charAt(0) === "1") {
     const binputPos = inputBN.fromTwos(64).abs();
 
-    const inputWizData = WizData.fromBin(binputPos.toString(2, binputPos.byteLength() * 8));
+    const inputWizData = WizData.fromBin(binputPos.toString(2, (binputPos.byteLength() + misingByte) * 8));
 
     if (inputWizData.number) {
       return WizData.fromNumber(inputWizData.number * -1);
