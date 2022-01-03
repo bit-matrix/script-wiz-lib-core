@@ -10,6 +10,10 @@ export const substr = (wizData: WizData, wizData2: WizData, wizData3: WizData): 
   const message = wizData.hex;
   const index = wizData2.number;
   const size = wizData3.number;
+  
+  if(message.length / 2 < Number(size)){
+    throw "Size number must be lower than message length."
+  }
 
   if (index !== undefined && size !== undefined) {
     const result = message.substr(index * 2, size * 2);
