@@ -19,6 +19,11 @@ export const substr = (wizData: WizData, wizData2: WizData, wizData3: WizData): 
     throw "Index and size numbers must be greater than 0."
   } 
 
+  if (Number(index) >= message.length){
+    throw "Message length must be greater than index."
+  }
+
+
   if (index !== undefined && size !== undefined) {
     const result = message.substr(index * 2, size * 2);
 
