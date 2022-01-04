@@ -12,17 +12,20 @@ export const substr = (wizData: WizData, wizData2: WizData, wizData3: WizData): 
   const size = wizData3.number;
   
   if(message.length / 2 < Number(size)){
-    throw "Size number must be lower than message length."
+    throw "Size number must be lower than message length.";
   }
 
   if(Number(index) < 0 || Number(size) < 0){
-    throw "Index and size numbers must be greater than 0."
+    throw "Index and size numbers must be greater than 0.";
   } 
 
-  if (Number(index) >= message.length){
-    throw "Message length must be greater than index."
+  if (Number(index) >= message.length / 2){
+    throw "Message length must be greater than index.";
   }
 
+  if ((Number(index) + Number(size)) > (message.length / 2)){
+    throw "Operation not valid with the current stack size";
+  }
 
   if (index !== undefined && size !== undefined) {
     const result = message.substr(index * 2, size * 2);
