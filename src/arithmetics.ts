@@ -214,3 +214,13 @@ export const withIn = (wizData: WizData, wizData2: WizData, wizData3: WizData): 
 
   throw "Error: this operation requires 3 valid number wizData";
 };
+
+export const mod = (wizData: WizData, wizData2: WizData): WizData => {
+  if (wizData.number !== undefined && wizData2.number !== undefined) {
+    const modResult = wizData.number % wizData2.number;
+
+    return WizData.fromNumber(modResult);
+  }
+
+  throw "Error: this operation requires 2 valid number wizData";
+};

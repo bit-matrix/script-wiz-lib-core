@@ -38,17 +38,18 @@ export const LE64ToNum = (wizData: WizData): WizData => {
 
   let inputArray = Array.from(wizData.bytes);
   let i = 7;
+
   while (i >= 0) {
-    if(inputArray[i] === 0){
-        inputArray.pop();
-          i--;
-      } else {
-        break;
-      }
+    if (inputArray[i] === 0) {
+      inputArray.pop();
+      i--;
+    } else {
+      break;
+    }
   }
-  
+
   const lastElement = WizData.fromNumber(inputArray[inputArray.length - 1]);
-  const misingByte = (lastElement.bytes.length > 1 ? 1 : 0);
+  const misingByte = lastElement.bytes.length > 1 ? 1 : 0;
 
   const inputBN = new BN(wizData.bin, 2);
 
