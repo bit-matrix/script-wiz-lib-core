@@ -67,7 +67,13 @@ export const LE64ToNum = (wizData: WizData): WizData => {
     return inputWizData;
   }
 
-  return WizData.fromBin(inputBN.toString(2, inputBnByteLength * 8));
+  const finalBinValue = inputBN.toString(2, inputBnByteLength * 8);
+
+  if (finalBinValue === "0") {
+    return WizData.fromNumber(0);
+  }
+
+  return WizData.fromBin(finalBinValue);
 };
 
 export const LE32toLE64 = (wizData: WizData): WizData => {
