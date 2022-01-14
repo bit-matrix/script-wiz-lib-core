@@ -8,7 +8,7 @@ export const add64 = (wizData: WizData, wizData2: WizData): WizData[] => {
   const a = new BN(wizData.bin, 2);
   const b = new BN(wizData2.bin, 2);
 
-  const isANeg = a.toString(2).charAt(0) === "1";
+  const isANeg = wizData.bin.charAt(0) === "1";
 
   if ((!isANeg && b.gt(MAX_INTEGER_64.sub(a))) || (isANeg && b.lt(MIN_INTEGER_64.sub(a)))) {
     return [WizData.fromNumber(0)];
@@ -27,7 +27,7 @@ export const sub64 = (wizData: WizData, wizData2: WizData): WizData[] => {
   const a = new BN(wizData.bin, 2);
   const b = new BN(wizData2.bin, 2);
 
-  const isBNeg = b.toString(2).charAt(0) === "1";
+  const isBNeg = wizData2.bin.charAt(0) === "1";
 
   if ((!isBNeg && a.lt(MIN_INTEGER_64.add(b))) || (isBNeg && a.gt(MAX_INTEGER_64.add(b)))) {
     return [WizData.fromNumber(0)];
@@ -49,7 +49,7 @@ export const mul64 = (wizData: WizData, wizData2: WizData): WizData[] => {
   const a = new BN(wizData.bin, 2);
   const b = new BN(wizData2.bin, 2);
 
-  const isANeg = a.toString(2).charAt(0) === "1";
+  const isANeg = wizData.bin.charAt(0) === "1";
 
   if (
     (!isANeg && b.gt(ZERO_64) && a.gt(MAX_INTEGER_64.div(b))) ||
