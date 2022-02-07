@@ -1,17 +1,17 @@
 import WizData from "@script-wiz/wiz-data";
 
-export const checkLockTimeVerify = (wizData: WizData): WizData => {
-  if (wizData.number !== undefined) {
-    return WizData.fromNumber(1);
+export const checkLockTimeVerify = (wizData: WizData) => {
+  if (wizData.number === undefined) {
+    throw "Error: Invalid input: this operation requires a valid Script Number";
   }
 
-  throw "Error: Invalid input: this operation requires a valid Script Number";
+  // TODO check against transaction
 };
 
-export const checkSequenceVerify = (wizData: WizData): WizData => {
-  if (wizData.number !== undefined) {
-    return WizData.fromNumber(1);
+export const checkSequenceVerify = (wizData: WizData) => {
+  if (wizData.number === undefined) {
+    throw "Error: Invalid input: this operation requires a valid Script Number";
   }
 
-  throw "Error: Invalid input: this operation requires a valid Script Number";
+  // TODO check against transaction
 };
