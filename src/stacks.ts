@@ -2,11 +2,11 @@ import WizData from "@script-wiz/wiz-data";
 
 export const fromAltStack = (wizData: WizData): WizData => wizData;
 
-export const twoDup = (wizData: WizData, wizData2: WizData): WizData[] => [wizData, wizData2];
+export const twoDup = (wizData: WizData, wizData2: WizData): WizData[] => [dupData(wizData), dupData(wizData2)];
 
 export const threeDup = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData[] => [wizData, wizData2, wizData3];
 
-export const twoOver = (wizData: WizData, wizData2: WizData): WizData[] => [wizData, wizData2];
+export const twoOver = (wizData: WizData, wizData2: WizData): WizData[] => [dupData(wizData), dupData(wizData2)];
 
 export const rot = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData[] => [wizData2, wizData3, wizData];
 
@@ -23,21 +23,21 @@ export const twoSwap = (wizData: WizData, wizData2: WizData, wizData3: WizData, 
 
 export const depth = (length: number): WizData => WizData.fromNumber(length);
 
-export const dup = (wizData: WizData): WizData => wizData;
+export const dup = (wizData: WizData): WizData => dupData(wizData);
 
 export const ifDup = (wizData: WizData): WizData | {} => {
   if (wizData.number !== undefined && wizData.number === 0) {
     return {};
   }
 
-  return wizData;
+  return dupData(wizData);
 };
 
 export const nip = (wizData: WizData): WizData => wizData;
 
-export const over = (wizData: WizData): WizData => wizData;
+export const over = (wizData: WizData): WizData => dupData(wizData);
 
-export const pick = (wizDataArray: WizData[], stackIndex: number): WizData[] => [...wizDataArray, wizDataArray.reverse()[stackIndex]];
+export const pick = (wizDataArray: WizData[], stackIndex: number): WizData[] => [...wizDataArray, dupData(wizDataArray.reverse()[stackIndex])];
 
 export const roll = (wizDataArray: WizData[], stackIndex: number): WizData[] => {
   const newWizDataArray: WizData[] = [...wizDataArray].reverse();
@@ -51,4 +51,10 @@ export const roll = (wizDataArray: WizData[], stackIndex: number): WizData[] => 
 
 export const swap = (wizData: WizData, wizData2: WizData): WizData[] => [wizData, wizData2];
 
-export const tuck = (wizData: WizData, wizData2: WizData): WizData[] => [wizData2, wizData, wizData2];
+export const tuck = (wizData: WizData, wizData2: WizData): WizData[] => [dupData(wizData2), wizData, wizData2];
+
+function dupData(wizData: WizData): WizData {
+  const newWizData = Object.create(wizData);
+  if (newWizData.label) newWizData.label += '\'';
+  return newWizData;
+}
