@@ -4,6 +4,8 @@ import BN from "bn.js";
 import WizData from "@script-wiz/wiz-data";
 import bcrypto from "bcrypto";
 import { publicKeyTweakCheckWithPrefix } from "./taproot";
+import { TxData } from "./model";
+import { segwitSerialization } from "./serialization";
 
 // TO DO @afarukcali review
 
@@ -76,23 +78,14 @@ export const ecdsaVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizDat
   }
 };
 
-export const checkSig = (wizData: WizData, wizData2: WizData): WizData => {
+export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData): WizData => {
   // stackData 1 = signature
   // stackData 2 = pubkey
-  const signature = wizData.hex;
-  const publicKey = wizData2.hex;
 
-  if (publicKey.length !== 68) return WizData.fromNumber(0);
+  const message = segwitSerialization(txTemplateData);
+  const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
-  if (!signature.startsWith("0x30")) return WizData.fromNumber(0);
-
-  const rAndSDataSize = Number("0x" + signature.substr(4, 2));
-
-  const signatureStringLength = rAndSDataSize * 2 + 6;
-
-  if (signature.length !== signatureStringLength) return WizData.fromNumber(0);
-
-  return WizData.fromNumber(1);
+  return ecdsaVerify(wizData, hashedMessage, wizData2);
 };
 
 // taproot feature

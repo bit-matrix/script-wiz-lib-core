@@ -17,8 +17,9 @@ import { size } from "./splices";
 // 9. nLocktime of the transaction (4-byte little endian)
 // 10. sighash type of the signature (4-byte little endian)
 
-export const segwitSerialization = (scriptCode: WizData, data: TxData) => {
+export const segwitSerialization = (data: TxData) => {
   const currentInput = data.inputs[data.currentInputIndex];
+  const scriptCode = WizData.fromHex(currentInput.scriptPubKey);
 
   // 2 (32-byte hash)
   const hashPrevouts = hash256(WizData.fromHex(hexLE(currentInput.previousTxId) + currentInput.vout)).toString();
