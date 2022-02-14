@@ -1,4 +1,5 @@
 import WizData, { hexLE } from "@script-wiz/wiz-data";
+import { numToLE32, numToLE64 } from "./convertion";
 import { hash256 } from "./crypto";
 import { TxData, TxOutput } from "./model";
 import { size } from "./splices";
@@ -20,43 +21,36 @@ import { size } from "./splices";
 export const segwitSerialization = (data: TxData) => {
   const currentInput = data.inputs[data.currentInputIndex];
   const scriptCode = WizData.fromHex(currentInput.scriptPubKey);
+  const vout = numToLE32(WizData.fromNumber(Number(currentInput.vout))).hex;
+  const inputAmount = numToLE64(WizData.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
 
   // 2 (32-byte hash)
-  const hashPrevouts = hash256(WizData.fromHex(hexLE(currentInput.previousTxId) + currentInput.vout)).toString();
+  const hashPrevouts = hash256(WizData.fromHex(hexLE(currentInput.previousTxId) + vout)).toString();
+
+  const nsequence = hexLE(currentInput.sequence);
 
   // 3 (32-byte hash)
-  const hashSequence = hash256(WizData.fromHex(hexLE(currentInput.sequence))).toString();
+  const hashSequence = hash256(WizData.fromHex(nsequence)).toString();
 
   // 4. outpoint (32-byte hash + 4-byte little endian)
-  const outpoint = hexLE(currentInput.previousTxId) + currentInput.vout;
+  const outpoint = hexLE(currentInput.previousTxId) + vout;
 
   // 5. script code hash
   const scriptCodeSize = size(scriptCode).hex.substring(0, 2);
 
-  // 7 nsequence
-  const nsequence = hexLE(currentInput.sequence);
-
   // 8 hashOutputs
   const hashOutputs = calculateHashOutputs(data.outputs);
 
-  console.log(data.version);
-  console.log(hashPrevouts);
-  console.log(hashSequence);
-  console.log(outpoint);
-  console.log(scriptCodeSize);
-  console.log(scriptCode.hex);
-  console.log(currentInput.amount);
-  console.log(hashOutputs);
-  console.log(data.timelock);
-
-  return data.version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + currentInput.amount + nsequence + hashOutputs + data.timelock + "01000000";
+  return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01000000";
 };
 
 const calculateHashOutputs = (outputs: TxOutput[]) => {
   let hashOutputs = "";
 
   outputs.forEach((output: TxOutput) => {
-    hashOutputs += output.amount + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
+    hashOutputs += numToLE64(WizData.fromNumber(Number(output.amount) * 100000000)).hex + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
   });
 
   return hash256(WizData.fromHex(hashOutputs)).toString();

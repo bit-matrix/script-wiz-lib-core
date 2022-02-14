@@ -36,7 +36,7 @@ export const numToLE32 = (wizData: WizData): WizData => {
 
   if (inputByteLength > 4) throw "Input byte length must be maximum 4 byte";
 
-  return convert64(wizData);
+  return convert32(wizData);
 };
 
 export const convert32 = (wizData: WizData): WizData => {
