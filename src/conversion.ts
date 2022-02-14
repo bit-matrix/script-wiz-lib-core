@@ -31,6 +31,36 @@ export const numToLE64 = (wizData: WizData): WizData => {
   return convert64(wizData);
 };
 
+export const numToLE32 = (wizData: WizData): WizData => {
+  const inputByteLength = wizData.bytes.length;
+
+  if (inputByteLength > 4) throw "Input byte length must be maximum 4 byte";
+
+  return convert64(wizData);
+};
+
+export const convert32 = (wizData: WizData): WizData => {
+  const isNegate = wizData.bin.charAt(0) === "1";
+
+  let input = new BN(wizData.bin, 2);
+
+  if (!isNegate) {
+    const input32 = input.toString(2, 32);
+
+    return WizData.fromBin(input32);
+  } else {
+    if (wizData.number) input = new BN(wizData.number || 0);
+
+    const negateValue = input.abs().neg();
+
+    const twosNegateValue = negateValue.toTwos(32);
+
+    const twosNegateValue32 = twosNegateValue.toString(2, 32);
+
+    return WizData.fromBin(twosNegateValue32);
+  }
+};
+
 export const LE64ToNum = (wizData: WizData): WizData => {
   const inputBytes = wizData.bytes;
 
