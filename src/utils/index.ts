@@ -1,6 +1,6 @@
 import WizData from "@script-wiz/wiz-data";
 import BN from "bn.js";
-import { convert64 } from "../conversion";
+import { convert64 } from "../convertion";
 
 export const ZERO_64 = new BN(convert64(WizData.fromHex("00")).bin, 2);
 export const MAX_INTEGER_64 = new BN("1111111111111111111111111111111111111111111111111111111101111111", 2);
