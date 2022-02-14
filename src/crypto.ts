@@ -88,6 +88,21 @@ export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: Tx
   return ecdsaVerify(wizData, hashedMessage, wizData2);
 };
 
+export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData): WizData => {
+  const message = segwitSerialization(txTemplateData);
+  const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
+
+  signatureList.forEach((signature: WizData) => {
+    publicKeyList.forEach((pk) => {
+      const verifyResult = ecdsaVerify(signature, hashedMessage, pk);
+
+      if (verifyResult.number === 0) return WizData.fromNumber(0);
+    });
+  });
+
+  return WizData.fromNumber(1);
+};
+
 // taproot feature
 export const tweakVerify = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData => {
   const internalKey = wizData3;
