@@ -4,13 +4,8 @@
   "description": "script wiz lib core",
   "main": "index.js",
   "scripts": {
-    "wp-umd": "npx webpack --mode production --config webpack.config.umd.js",
-    "wp-umd-dev": "npx webpack --mode development --config webpack.config.umd.js",
-    "wp-common": "npx webpack --mode production --config webpack.config.js",
-    "wp-common-dev": "npx webpack --mode development --config webpack.config.js",
-    "wp": "yarn wp-umd && yarn wp-common",
-    "wpdev": "yarn wp-umd-dev && yarn wp-common-dev",
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.7",
@@ -21,14 +16,8 @@
     "@types/elliptic": "^6.4.12",
     "@types/jest": "^26.0.23",
     "@types/secp256k1": "^4.0.3",
-    "babel-loader": "^8.0.6",
-    "c-cpp-modules-webpack-loader": "^0.9.9",
     "jest": "^26.6.3",
-    "ts-loader": "^8.0.18",
-    "typescript": "^4.2.3",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.12",
-    "wasm-loader": "^1.3.0"
+    "typescript": "^4.2.3"
   },
   "repository": {
     "type": "git",
