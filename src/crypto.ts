@@ -92,15 +92,11 @@ export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[]
   const message = segwitSerialization(txTemplateData);
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
-  signatureList.forEach((signature: WizData) => {
-    publicKeyList.forEach((pk) => {
-      const verifyResult = ecdsaVerify(signature, hashedMessage, pk);
-
-      if (verifyResult.number === 0) return WizData.fromNumber(0);
-    });
+  const signResults = signatureList.map((signature: WizData, index: number) => {
+    return ecdsaVerify(signature, hashedMessage, publicKeyList[index]);
   });
 
-  return WizData.fromNumber(1);
+  return signResults.findIndex((data: WizData) => data.number === 0) > -1 ? WizData.fromNumber(0) : WizData.fromNumber(1);
 };
 
 // taproot feature

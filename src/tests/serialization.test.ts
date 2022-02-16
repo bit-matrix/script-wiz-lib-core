@@ -6,19 +6,20 @@ test("Serialization test", () => {
   const data: TxData = {
     inputs: [
       {
-        previousTxId: "f153bf852d442d9a37959a7609c1a2053a6c5f8167658a8ebf65de56708deb03",
-        vout: "1",
-        sequence: "fffffffd",
-        scriptPubKey: "76a914d72cfa39705003d0131f4f5c04b3225800065fd388ac",
-        amount: "0.06196677",
+        previousTxId: "0930a48bd0b7ac94822b838b733ad0e9691bce1c6046fbd62e150788fce297f9",
+        vout: "3",
+        sequence: "ffffffff",
+        scriptPubKey:
+          "52210375e00eb72e29da82b89367947f29ef34afb75e8654f6ea368e0acdfd92976b7c2103a1b26313f430c4b15bb1fdce663207659d8cac749a0e53d70eff01874496feff2103c96d495bfdd5ba4145e3e046fee45e84a8a48ad05bd8dbb395c011a32cf9f88053ae",
+        amount: "0.01662577",
       },
     ],
     outputs: [
-      { scriptPubKey: "a9142cdc473d4c01c6b4ecead83f440a18a58211ba2887", amount: "0.0006613" },
-      { scriptPubKey: "0014e3062e121e0ffc0cb377ea11291c77d5a68d10cc", amount: "0.06114766" },
+      { scriptPubKey: "a914789b9183bc04977e34aaf9d22d41c6ff8867fc4087", amount: "0.013" },
+      { scriptPubKey: "0020701a8d401c84fb13e6baf169d59684e17abd9fa216c8cc5b9fc63d622ff8c58d", amount: "0.00302577" },
     ],
-    version: "2",
-    timelock: "721102",
+    version: "1",
+    timelock: "0",
     currentInputIndex: 0,
   };
 
