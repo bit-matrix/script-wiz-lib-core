@@ -84,9 +84,14 @@ exports.checkSig = checkSig;
 var checkMultiSig = function (publicKeyList, signatureList, txTemplateData) {
     var message = (0, serialization_1.segwitSerialization)(txTemplateData);
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
-    var signResults = signatureList.map(function (signature, index) {
-        return (0, exports.ecdsaVerify)(signature, hashedMessage, publicKeyList[index]);
+    console.log(hashedMessage);
+    var signResults = [];
+    signatureList.forEach(function (signature) {
+        publicKeyList.forEach(function (pk) {
+            signResults.push((0, exports.ecdsaVerify)(signature, hashedMessage, pk));
+        });
     });
+    console.log(signResults);
     return signResults.findIndex(function (data) { return data.number === 0; }) > -1 ? wiz_data_1.default.fromNumber(0) : wiz_data_1.default.fromNumber(1);
 };
 exports.checkMultiSig = checkMultiSig;
