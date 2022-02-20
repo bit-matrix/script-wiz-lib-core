@@ -123,8 +123,8 @@ export const tapRoot = (pubKey: WizData, scripts: WizData[], taprootVersion: TAP
     testnetAddress = segwit_addr.encode("tb", 1, WizData.fromHex(finalTweaked).bytes) || "";
     mainnetAddress = segwit_addr.encode("bc", 1, WizData.fromHex(finalTweaked).bytes) || "";
   } else {
-    testnetAddress = createBech32Address(WizData.fromHex(finalTweaked), "tex", 0);
-    mainnetAddress = createBech32Address(WizData.fromHex(finalTweaked), "ex", 0);
+    testnetAddress = segwit_addr.encode("tex", 1, WizData.fromHex(finalTweaked).bytes) || "";
+    mainnetAddress = segwit_addr.encode("ex", 1, WizData.fromHex(finalTweaked).bytes) || "";
   }
 
   const scriptPubkey = WizData.fromHex(op1Hex + WizData.fromNumber(finalTweaked.length / 2).hex + finalTweaked);
