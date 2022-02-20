@@ -30,6 +30,7 @@ var segwit_addr = __importStar(require("../bech32/segwit_addr"));
 var bcrypto_1 = __importDefault(require("bcrypto"));
 var model_1 = require("../model");
 var varuint_bitcoin_1 = __importDefault(require("varuint-bitcoin"));
+var addresses_1 = require("../addresses");
 // type TreeHelper = {
 //   data: string;
 //   h: string;
@@ -104,10 +105,19 @@ var tapRoot = function (pubKey, scripts, taprootVersion) {
     var finalTweaked = tweaked.hex.substr(2);
     console.log("final tweaked", finalTweaked);
     var op1Hex = "51";
-    var bech32 = segwit_addr.encode("bc", 1, wiz_data_1.default.fromHex(finalTweaked).bytes) || "";
-    var scriptPubKey = wiz_data_1.default.fromHex(op1Hex + wiz_data_1.default.fromNumber(finalTweaked.length / 2).hex + finalTweaked);
-    console.log("script pub key", scriptPubKey.hex);
-    return { scriptPubKey: scriptPubKey, tweak: tweaked, bech32: bech32 };
+    var testnetAddress = "";
+    var mainnetAddress = "";
+    if (taprootVersion === model_1.TAPROOT_VERSION.BITCOIN) {
+        testnetAddress = segwit_addr.encode("tb", 1, wiz_data_1.default.fromHex(finalTweaked).bytes) || "";
+        mainnetAddress = segwit_addr.encode("bc", 1, wiz_data_1.default.fromHex(finalTweaked).bytes) || "";
+    }
+    else {
+        testnetAddress = (0, addresses_1.createBech32Address)(wiz_data_1.default.fromHex(finalTweaked), "tex", 0);
+        mainnetAddress = (0, addresses_1.createBech32Address)(wiz_data_1.default.fromHex(finalTweaked), "ex", 0);
+    }
+    var scriptPubkey = wiz_data_1.default.fromHex(op1Hex + wiz_data_1.default.fromNumber(finalTweaked.length / 2).hex + finalTweaked);
+    console.log("script pub key", scriptPubkey.hex);
+    return { scriptPubkey: scriptPubkey, tweak: tweaked, address: { testnet: testnetAddress, mainnet: mainnetAddress } };
 };
 exports.tapRoot = tapRoot;
 //# sourceMappingURL=index.js.map
