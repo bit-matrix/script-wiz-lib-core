@@ -1,3 +1,4 @@
 import WizData from "@script-wiz/wiz-data";
-export declare const checkLockTimeVerify: (wizData: WizData) => WizData;
+import { TxData } from ".";
+export declare const checkLockTimeVerify: (input: WizData, txData: TxData) => WizData;
 export declare const checkSequenceVerify: (wizData: WizData) => WizData;
