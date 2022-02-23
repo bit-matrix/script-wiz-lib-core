@@ -29,11 +29,33 @@ var checkLockTimeVerify = function (input, txData) {
     return wiz_data_1.default.fromNumber(1);
 };
 exports.checkLockTimeVerify = checkLockTimeVerify;
-var checkSequenceVerify = function (wizData) {
-    if (wizData.number !== undefined) {
-        return wiz_data_1.default.fromNumber(1);
-    }
-    throw "Error: Invalid input: this operation requires a valid Script Number";
+var checkSequenceVerify = function (input, txData) {
+    if (input.number === undefined)
+        throw "Input number is invalid";
+    if (txData.version === "")
+        throw "Transaction template version is empty";
+    var transactionSequenceNumber = wiz_data_1.default.fromHex(txData.inputs[txData.currentInputIndex].sequence);
+    if (transactionSequenceNumber.number === undefined)
+        throw "Transaction template sequence is invalid";
+    var inputUnitValue = parseInt(input.bin.slice(16, 33), 2);
+    var inputDisableFlag = input.bin[0];
+    var inputTypeFlag = input.bin[9];
+    var transactionBlockUnitValue = parseInt(transactionSequenceNumber.bin.slice(16, 33), 2);
+    var transactionTypeFlag = transactionSequenceNumber.bin[9];
+    //return WizData.fromNumber(0);
+    if (inputUnitValue > transactionBlockUnitValue)
+        return wiz_data_1.default.fromNumber(0);
+    if (Number(txData.version) < 2)
+        return wiz_data_1.default.fromNumber(0);
+    if (input.number < 0)
+        return wiz_data_1.default.fromNumber(0);
+    if (Number(inputDisableFlag) !== 0)
+        return wiz_data_1.default.fromNumber(0);
+    if (Number(inputTypeFlag) === 0 && Number(transactionTypeFlag) === 1)
+        return wiz_data_1.default.fromNumber(0);
+    if (Number(inputTypeFlag) === 1 && Number(transactionTypeFlag) === 0)
+        return wiz_data_1.default.fromNumber(0);
+    return wiz_data_1.default.fromNumber(1);
 };
 exports.checkSequenceVerify = checkSequenceVerify;
 //# sourceMappingURL=locktime.js.map
