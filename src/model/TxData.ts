@@ -5,6 +5,8 @@ export type TxInput = {
   scriptPubKey: string;
   amount: string;
   assetId?: string;
+  blockHeight?: string;
+  blockTimestamp?: string;
 };
 
 export type TxOutput = {
