@@ -15,9 +15,26 @@ import { checkLockTimeVerify, checkSequenceVerify } from "../locktime";
 //   checkLockTimeVerify(txData, true);
 // });
 
-// test("LockTime checkSequenceVerify test", () => {
-//   const wizData: WizData = WizData.fromNumber(5);
+test("LockTime checkSequenceVerify test", () => {
+  const wizData: WizData = WizData.fromNumber(4194336);
+  const txData: TxData = {
+    inputs: [
+      {
+        previousTxId: "",
+        vout: "",
+        sequence: "00400020",
+        scriptPubKey: "",
+        amount: "",
+        assetId: "",
+      },
+    ],
+    outputs: [],
+    version: "7",
+    timelock: "",
+    currentInputIndex: 0,
+  };
 
-//   const result: WizData = checkLockTimeVerify(wizData);
-//   expect(result.number).toBe(1);
-// });
+  const result: WizData = checkSequenceVerify(wizData, txData);
+  console.log(result);
+  expect(result.number).toBe(1);
+});

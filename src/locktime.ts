@@ -1,4 +1,4 @@
-import WizData from "@script-wiz/wiz-data";
+import WizData, { hexLE } from "@script-wiz/wiz-data";
 import { TxData } from ".";
 
 export const checkLockTimeVerify = (input: WizData, txData: TxData): WizData => {
@@ -23,10 +23,26 @@ export const checkLockTimeVerify = (input: WizData, txData: TxData): WizData => 
   return WizData.fromNumber(1);
 };
 
-export const checkSequenceVerify = (wizData: WizData): WizData => {
-  if (wizData.number !== undefined) {
-    return WizData.fromNumber(1);
-  }
+export const checkSequenceVerify = (input: WizData, txData: TxData): WizData => {
+  if (input.number === undefined) throw "Input number is invalid";
+  if (txData.version === "") throw "Transaction template version is empty";
 
-  throw "Error: Invalid input: this operation requires a valid Script Number";
+  const transactionSequenceNumber = WizData.fromHex(txData.inputs[txData.currentInputIndex].sequence);
+
+  if (transactionSequenceNumber.number === undefined) throw "Transaction template sequence is invalid";
+
+  const inputUnitValue = parseInt(input.bin.slice(16, 33), 2);
+  const inputDisableFlag = input.bin[0];
+  const inputTypeFlag = input.bin[9];
+  const transactionBlockUnitValue = parseInt(transactionSequenceNumber.bin.slice(16, 33), 2);
+  const transactionTypeFlag = transactionSequenceNumber.bin[9];
+  //return WizData.fromNumber(0);
+  if (inputUnitValue > transactionBlockUnitValue) return WizData.fromNumber(0);
+  if (Number(txData.version) < 2) return WizData.fromNumber(0);
+  if (input.number < 0) return WizData.fromNumber(0);
+  if (Number(inputDisableFlag) !== 0) return WizData.fromNumber(0);
+  if (Number(inputTypeFlag) === 0 && Number(transactionTypeFlag) === 1) return WizData.fromNumber(0);
+  if (Number(inputTypeFlag) === 1 && Number(transactionTypeFlag) === 0) return WizData.fromNumber(0);
+
+  return WizData.fromNumber(1);
 };
