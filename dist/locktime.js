@@ -22,6 +22,8 @@ var checkLockTimeVerify = function (input, txData) {
     if (LOCKTIME_THRESHOLD < inputNumber && LOCKTIME_THRESHOLD > timelockNumber)
         return wiz_data_1.default.fromNumber(0);
     var currentTransactionInputSequence = wiz_data_1.default.fromHex(txData.inputs[txData.currentInputIndex].sequence);
+    if (txData.inputs[txData.currentInputIndex].sequence === "")
+        throw "Sequence must not be empty in transaction template";
     if (currentTransactionInputSequence.number === -2147483647)
         return wiz_data_1.default.fromNumber(0);
     if (timelockNumber < inputNumber)
@@ -35,6 +37,8 @@ var checkSequenceVerify = function (input, txData) {
     if (txData.version === "")
         throw "Transaction template version is empty";
     var transactionSequenceNumber = wiz_data_1.default.fromHex(txData.inputs[txData.currentInputIndex].sequence);
+    if (txData.inputs[txData.currentInputIndex].sequence === "")
+        throw "Sequence must not be empty in transaction template";
     if (transactionSequenceNumber.number === undefined)
         throw "Transaction template sequence is invalid";
     var inputUnitValue = parseInt(input.bin.slice(16, 33), 2);
@@ -42,7 +46,6 @@ var checkSequenceVerify = function (input, txData) {
     var inputTypeFlag = input.bin[9];
     var transactionBlockUnitValue = parseInt(transactionSequenceNumber.bin.slice(16, 33), 2);
     var transactionTypeFlag = transactionSequenceNumber.bin[9];
-    //return WizData.fromNumber(0);
     if (inputUnitValue > transactionBlockUnitValue)
         return wiz_data_1.default.fromNumber(0);
     if (Number(txData.version) < 2)

@@ -39,19 +39,39 @@ var splices_1 = require("./splices");
 var segwitSerialization = function (data) {
     var currentInput = data.inputs[data.currentInputIndex];
     var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
+    if (currentInput.scriptPubKey === "")
+        throw "scriptPubkey must not be empty in transaction template";
     var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
+    if (currentInput.vout === "")
+        throw "Vout must not be empty in transaction template";
     var inputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+    if (currentInput.amount === "")
+        throw "Amount must not be empty in transaction template";
     var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
     var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
     // 2 (32-byte hash)
     var hashPrevouts = (0, crypto_1.hash256)(wiz_data_1.default.fromHex((0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout)).toString();
+    if (currentInput.previousTxId === "")
+        throw "Previous TX ID must not be empty in transaction template";
     var nsequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
+    if (currentInput.sequence === "")
+        throw "Sequence must not be empty in transaction template";
     // 3 (32-byte hash)
     var hashSequence = (0, crypto_1.hash256)(wiz_data_1.default.fromHex(nsequence)).toString();
+    if (hashSequence === "")
+        throw "Sequence must not be empty in transaction template";
     // 4. outpoint (32-byte hash + 4-byte little endian)
     var outpoint = (0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout;
+    if (outpoint === "")
+        throw "Previous TX ID and Vout must not be empty in transaction template";
     // 5. script code hash
     var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
+    if (scriptCodeSize === "")
+        throw "scriptPubkey must not be empty in transaction template";
     // 8 hashOutputs
     var hashOutputs = calculateHashOutputs(data.outputs);
     return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01000000";
@@ -60,6 +80,8 @@ exports.segwitSerialization = segwitSerialization;
 var calculateHashOutputs = function (outputs) {
     var hashOutputs = "";
     outputs.forEach(function (output) {
+        if (output.amount === "" || output.scriptPubKey === "")
+            throw "Amount and scriptPubkey must not be empty in output transaction template";
         hashOutputs += (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(output.amount) * 100000000)).hex + (0, splices_1.size)(wiz_data_1.default.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
     });
     return (0, crypto_1.hash256)(wiz_data_1.default.fromHex(hashOutputs)).toString();
