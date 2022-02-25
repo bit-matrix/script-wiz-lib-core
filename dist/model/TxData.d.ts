@@ -5,6 +5,8 @@ export declare type TxInput = {
     scriptPubKey: string;
     amount: string;
     assetId?: string;
+    blockHeight?: string;
+    blockTimestamp?: string;
 };
 export declare type TxOutput = {
     scriptPubKey: string;

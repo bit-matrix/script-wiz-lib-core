@@ -1,6 +1,6 @@
 {
   "name": "@script-wiz/lib-core",
-  "version": "0.0.22",
+  "version": "0.0.27",
   "description": "script wiz lib core",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,7 @@
   "dependencies": {
     "@script-wiz/wiz-data": "^1.0.1",
     "bcrypto": "^5.4.0",
+    "bech32": "^2.0.0",
     "bn.js": "^5.2.0",
     "crypto-js": "^4.1.1",
     "elliptic": "^6.5.4",

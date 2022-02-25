@@ -1,7 +1,12 @@
 import WizData from "@script-wiz/wiz-data";
 
+export type Address = {
+  testnet: string;
+  mainnet: string;
+};
+
 export type Taproot = {
   tweak: WizData;
-  scriptPubKey: WizData;
-  bech32: string;
+  scriptPubkey: WizData;
+  address: Address;
 };

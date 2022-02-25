@@ -1,6 +1,7 @@
-import WizData from "@script-wiz/wiz-data";
+import WizData, { hexLE } from "@script-wiz/wiz-data";
 import { TxInput, TxOutput } from "./model/TxData";
 import * as crypto from "./crypto";
+import { numToLE32, numToLE64 } from "./convertion";
 
 export const inspectInputOutPoint = (wizData: WizData, txInputs: TxInput[]): WizData[] => {
   let currentTxInputIndex = wizData.number;
@@ -18,7 +19,7 @@ export const inspectInputOutPoint = (wizData: WizData, txInputs: TxInput[]): Wiz
   if (txInputLength < currentTxInputIndex + 1) throw "Input index must less than transaction inputs length!";
 
   const currentInputPreviousTxId = txInputs[currentTxInputIndex].previousTxId;
-  const currentInputVout = txInputs[currentTxInputIndex].vout;
+  const currentInputVout = numToLE32(WizData.fromNumber(Number(txInputs[currentTxInputIndex].vout))).hex;
 
   if (!currentInputPreviousTxId) throw "Previous Tx Id not found! Check your transaction template.";
 
@@ -70,7 +71,7 @@ export const inspectInputValue = (wizData: WizData, txInputs: TxInput[]): WizDat
 
   if (txInputLength < currentTxInputIndex + 1) throw "Input index must less than transaction inputs length!";
 
-  const currentInputAmount = txInputs[currentTxInputIndex].amount;
+  const currentInputAmount = numToLE64(WizData.fromNumber(Number(txInputs[currentTxInputIndex].amount) * 100000000)).hex;
 
   if (!currentInputAmount) throw "Amount not found! Check your transaction template.";
 
@@ -151,7 +152,7 @@ export const inspectInputSequence = (wizData: WizData, txInputs: TxInput[]): Wiz
 
   if (txInputLength < currentTxInputIndex + 1) throw "Input index must less than transaction inputs length!";
 
-  const currentInputSequence = txInputs[currentTxInputIndex].sequence;
+  const currentInputSequence = hexLE(txInputs[currentTxInputIndex].sequence);
 
   if (!currentInputSequence) throw "Sequence not found! Check your transaction template.";
 
@@ -197,7 +198,7 @@ export const inspectOutputValue = (wizData: WizData, txOutputs: TxOutput[]): Wiz
 
   if (txOutputLength < currentTxOutputIndex + 1) throw "Output index must less than transaction outputs length!";
 
-  const currentOutputAmount = txOutputs[currentTxOutputIndex].amount;
+  const currentOutputAmount = numToLE64(WizData.fromNumber(Number(txOutputs[currentTxOutputIndex].amount) * 100000000)).hex;
 
   if (!currentOutputAmount) throw "Amount not found! Check your transaction template.";
 

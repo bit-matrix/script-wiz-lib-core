@@ -6,6 +6,7 @@ import * as segwit_addr from "../bech32/segwit_addr";
 import bcrypto from "bcrypto";
 import { TAPROOT_VERSION } from "../model";
 import varuint from "varuint-bitcoin";
+import { createBech32Address } from "../addresses";
 
 // type TreeHelper = {
 //   data: string;
@@ -115,11 +116,20 @@ export const tapRoot = (pubKey: WizData, scripts: WizData[], taprootVersion: TAP
 
   const op1Hex = "51";
 
-  const bech32 = segwit_addr.encode("bc", 1, WizData.fromHex(finalTweaked).bytes) || "";
+  let testnetAddress = "";
+  let mainnetAddress = "";
 
-  const scriptPubKey = WizData.fromHex(op1Hex + WizData.fromNumber(finalTweaked.length / 2).hex + finalTweaked);
+  if (taprootVersion === TAPROOT_VERSION.BITCOIN) {
+    testnetAddress = segwit_addr.encode("tb", 1, WizData.fromHex(finalTweaked).bytes) || "";
+    mainnetAddress = segwit_addr.encode("bc", 1, WizData.fromHex(finalTweaked).bytes) || "";
+  } else {
+    testnetAddress = segwit_addr.encode("tex", 1, WizData.fromHex(finalTweaked).bytes) || "";
+    mainnetAddress = segwit_addr.encode("ex", 1, WizData.fromHex(finalTweaked).bytes) || "";
+  }
 
-  console.log("script pub key", scriptPubKey.hex);
+  const scriptPubkey = WizData.fromHex(op1Hex + WizData.fromNumber(finalTweaked.length / 2).hex + finalTweaked);
 
-  return { scriptPubKey: scriptPubKey, tweak: tweaked, bech32 };
+  console.log("script pub key", scriptPubkey.hex);
+
+  return { scriptPubkey, tweak: tweaked, address: { testnet: testnetAddress, mainnet: mainnetAddress } };
 };
