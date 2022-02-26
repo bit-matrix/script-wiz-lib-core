@@ -6,6 +6,7 @@ import bcrypto from "bcrypto";
 import { publicKeyTweakCheckWithPrefix } from "./taproot";
 import { TxData } from "./model";
 import { segwitSerialization } from "./serialization";
+import { VM_NETWORK_VERSION } from "./taproot/model";
 
 // TO DO @afarukcali review
 
@@ -78,18 +79,18 @@ export const ecdsaVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizDat
   }
 };
 
-export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData): WizData => {
+export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData, version: VM_NETWORK_VERSION): WizData => {
   // stackData 1 = signature
   // stackData 2 = pubkey
 
-  const message = segwitSerialization(txTemplateData);
+  const message = version === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : "";
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
   return ecdsaVerify(wizData, hashedMessage, wizData2);
 };
 
-export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData): WizData => {
-  const message = segwitSerialization(txTemplateData);
+export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM_NETWORK_VERSION): WizData => {
+  const message = version === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : "";
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
   let signResults: WizData[] = [];

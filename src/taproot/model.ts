@@ -10,3 +10,8 @@ export type Taproot = {
   scriptPubkey: WizData;
   address: Address;
 };
+
+export enum VM_NETWORK_VERSION {
+  SEGWIT = "00",
+  TAPSCRIPT = "01",
+}
