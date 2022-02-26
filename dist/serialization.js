@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.segwitSerialization = void 0;
+exports.taprootSerialization = exports.segwitSerialization = void 0;
 var wiz_data_1 = __importStar(require("@script-wiz/wiz-data"));
 var convertion_1 = require("./convertion");
 var crypto_1 = require("./crypto");
@@ -38,28 +38,28 @@ var splices_1 = require("./splices");
 // 10. sighash type of the signature (4-byte little endian)
 var segwitSerialization = function (data) {
     var currentInput = data.inputs[data.currentInputIndex];
-    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
     if (currentInput.scriptPubKey === "")
         throw "scriptPubkey must not be empty in transaction template";
-    var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
+    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
     if (currentInput.vout === "")
         throw "Vout must not be empty in transaction template";
-    var inputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+    var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
     if (currentInput.amount === "")
         throw "Amount must not be empty in transaction template";
-    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    var inputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(currentInput.amount) * 100000000)).hex;
     if (data.timelock === "")
         throw "Timelock must not be empty in transaction template";
-    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
     if (data.version === "")
         throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
     // 2 (32-byte hash)
-    var hashPrevouts = (0, crypto_1.hash256)(wiz_data_1.default.fromHex((0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout)).toString();
     if (currentInput.previousTxId === "")
         throw "Previous TX ID must not be empty in transaction template";
-    var nsequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
+    var hashPrevouts = calculatePrevouts(data.inputs);
     if (currentInput.sequence === "")
         throw "Sequence must not be empty in transaction template";
+    var nsequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
     // 3 (32-byte hash)
     var hashSequence = (0, crypto_1.hash256)(wiz_data_1.default.fromHex(nsequence)).toString();
     if (hashSequence === "")
@@ -77,13 +77,71 @@ var segwitSerialization = function (data) {
     return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01000000";
 };
 exports.segwitSerialization = segwitSerialization;
-var calculateHashOutputs = function (outputs) {
+var calculateHashOutputs = function (outputs, isSegwit) {
+    if (isSegwit === void 0) { isSegwit = true; }
     var hashOutputs = "";
     outputs.forEach(function (output) {
         if (output.amount === "" || output.scriptPubKey === "")
             throw "Amount and scriptPubkey must not be empty in output transaction template";
         hashOutputs += (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(output.amount) * 100000000)).hex + (0, splices_1.size)(wiz_data_1.default.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
     });
-    return (0, crypto_1.hash256)(wiz_data_1.default.fromHex(hashOutputs)).toString();
+    return isSegwit ? (0, crypto_1.hash256)(wiz_data_1.default.fromHex(hashOutputs)).toString() : (0, crypto_1.sha256)(wiz_data_1.default.fromHex(hashOutputs)).toString();
 };
+var calculatePrevouts = function (inputs, isSegwit) {
+    if (isSegwit === void 0) { isSegwit = true; }
+    var hashInputs = "";
+    inputs.forEach(function (input) {
+        if (input.previousTxId === "" || input.vout === "")
+            throw "Previous tx id and vout must not be empty";
+        var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(input.vout))).hex;
+        hashInputs += wiz_data_1.default.fromHex((0, wiz_data_1.hexLE)(input.previousTxId) + vout).hex;
+    });
+    return isSegwit ? (0, crypto_1.hash256)(wiz_data_1.default.fromHex(hashInputs)).toString() : (0, crypto_1.sha256)(wiz_data_1.default.fromHex(hashInputs)).toString();
+};
+var calculateInputAmounts = function (inputs) {
+    var inputAmounts = "";
+    inputs.forEach(function (input) {
+        if (input.amount === "")
+            throw "Input amounts must not be empty";
+        inputAmounts += (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(input.amount) * 100000000)).hex;
+    });
+    return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputAmounts)).toString();
+};
+var calculateInputScriptPubkeys = function (inputs) {
+    var inputScriptPubkeys = "";
+    inputs.forEach(function (input) {
+        if (input.scriptPubKey === "")
+            throw "Input script pubkey must not be empty";
+        inputScriptPubkeys += (0, splices_1.size)(wiz_data_1.default.fromHex(input.scriptPubKey)).hex + input.scriptPubKey;
+    });
+    return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputScriptPubkeys)).toString();
+};
+var calculateInputSequences = function (inputs) {
+    var inputSequences = "";
+    inputs.forEach(function (input) {
+        if (input.sequence === "")
+            throw "Input script sequence must not be empty";
+        inputSequences += (0, wiz_data_1.hexLE)(input.sequence);
+    });
+    return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputSequences)).toString();
+};
+var taprootSerialization = function (data) {
+    var concat = "00";
+    var sighashType = "00";
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    var hashPrevouts = calculatePrevouts(data.inputs, false);
+    var inputAmountsSha = calculateInputAmounts(data.inputs);
+    var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
+    var inputSequencesSha = calculateInputSequences(data.inputs);
+    var outputs = calculateHashOutputs(data.outputs, false);
+    var spendType = "00";
+    var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
+    return concat + sighashType + version + timelock + hashPrevouts + inputAmountsSha + inputPubkeySha + inputSequencesSha + outputs + spendType + currentIndex;
+};
+exports.taprootSerialization = taprootSerialization;
 //# sourceMappingURL=serialization.js.map

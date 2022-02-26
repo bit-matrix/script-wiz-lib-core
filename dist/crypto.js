@@ -77,13 +77,16 @@ exports.ecdsaVerify = ecdsaVerify;
 var checkSig = function (wizData, wizData2, txTemplateData, version) {
     // stackData 1 = signature
     // stackData 2 = pubkey
-    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : "";
+    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData);
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
+    if (version === model_1.VM_NETWORK_VERSION.TAPSCRIPT) {
+        return (0, exports.shnorrSigVerify)(wizData, hashedMessage, wizData2);
+    }
     return (0, exports.ecdsaVerify)(wizData, hashedMessage, wizData2);
 };
 exports.checkSig = checkSig;
 var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version) {
-    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : "";
+    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData);
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
     var signResults = [];
     signatureList.forEach(function (signature) {
