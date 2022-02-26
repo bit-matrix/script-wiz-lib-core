@@ -11,6 +11,7 @@ var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
 var bcrypto_1 = __importDefault(require("bcrypto"));
 var taproot_1 = require("./taproot");
 var serialization_1 = require("./serialization");
+var model_1 = require("./taproot/model");
 // TO DO @afarukcali review
 var ripemd160 = function (wizData) {
     return crypto_js_1.default.RIPEMD160(crypto_js_1.default.enc.Hex.parse(wizData.hex));
@@ -73,16 +74,16 @@ var ecdsaVerify = function (sig, msg, pubkey) {
     }
 };
 exports.ecdsaVerify = ecdsaVerify;
-var checkSig = function (wizData, wizData2, txTemplateData) {
+var checkSig = function (wizData, wizData2, txTemplateData, version) {
     // stackData 1 = signature
     // stackData 2 = pubkey
-    var message = (0, serialization_1.segwitSerialization)(txTemplateData);
+    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : "";
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
     return (0, exports.ecdsaVerify)(wizData, hashedMessage, wizData2);
 };
 exports.checkSig = checkSig;
-var checkMultiSig = function (publicKeyList, signatureList, txTemplateData) {
-    var message = (0, serialization_1.segwitSerialization)(txTemplateData);
+var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version) {
+    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : "";
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
     var signResults = [];
     signatureList.forEach(function (signature) {
