@@ -1,7 +1,7 @@
 import WizData, { hexLE } from "@script-wiz/wiz-data";
 import { numToLE32, numToLE64 } from "./convertion";
-import { hash256 } from "./crypto";
-import { TxData, TxOutput } from "./model";
+import { hash256, sha256 } from "./crypto";
+import { TxData, TxInput, TxOutput } from "./model";
 import { size } from "./splices";
 
 // ref https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
@@ -17,31 +17,32 @@ import { size } from "./splices";
 // 8. hashOutputs (32-byte hash)
 // 9. nLocktime of the transaction (4-byte little endian)
 // 10. sighash type of the signature (4-byte little endian)
-
 export const segwitSerialization = (data: TxData) => {
   const currentInput = data.inputs[data.currentInputIndex];
 
-  const scriptCode = WizData.fromHex(currentInput.scriptPubKey);
   if (currentInput.scriptPubKey === "") throw "scriptPubkey must not be empty in transaction template";
 
-  const vout = numToLE32(WizData.fromNumber(Number(currentInput.vout))).hex;
+  const scriptCode = WizData.fromHex(currentInput.scriptPubKey);
+
   if (currentInput.vout === "") throw "Vout must not be empty in transaction template";
+  const vout = numToLE32(WizData.fromNumber(Number(currentInput.vout))).hex;
 
-  const inputAmount = numToLE64(WizData.fromNumber(Number(currentInput.amount) * 100000000)).hex;
   if (currentInput.amount === "") throw "Amount must not be empty in transaction template";
+  const inputAmount = numToLE64(WizData.fromNumber(Number(currentInput.amount) * 100000000)).hex;
 
-  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
   if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
 
-  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
   if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
 
   // 2 (32-byte hash)
-  const hashPrevouts = hash256(WizData.fromHex(hexLE(currentInput.previousTxId) + vout)).toString();
-  if (currentInput.previousTxId === "") throw "Previous TX ID must not be empty in transaction template";
 
-  const nsequence = hexLE(currentInput.sequence);
+  if (currentInput.previousTxId === "") throw "Previous TX ID must not be empty in transaction template";
+  const hashPrevouts = calculatePrevouts(data.inputs);
+
   if (currentInput.sequence === "") throw "Sequence must not be empty in transaction template";
+  const nsequence = hexLE(currentInput.sequence);
 
   // 3 (32-byte hash)
   const hashSequence = hash256(WizData.fromHex(nsequence)).toString();
@@ -61,7 +62,7 @@ export const segwitSerialization = (data: TxData) => {
   return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01000000";
 };
 
-const calculateHashOutputs = (outputs: TxOutput[]) => {
+const calculateHashOutputs = (outputs: TxOutput[], isSegwit = true) => {
   let hashOutputs = "";
 
   outputs.forEach((output: TxOutput) => {
@@ -70,5 +71,81 @@ const calculateHashOutputs = (outputs: TxOutput[]) => {
     hashOutputs += numToLE64(WizData.fromNumber(Number(output.amount) * 100000000)).hex + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
   });
 
-  return hash256(WizData.fromHex(hashOutputs)).toString();
+  return isSegwit ? hash256(WizData.fromHex(hashOutputs)).toString() : sha256(WizData.fromHex(hashOutputs)).toString();
+};
+
+const calculatePrevouts = (inputs: TxInput[], isSegwit = true) => {
+  let hashInputs = "";
+
+  inputs.forEach((input: TxInput) => {
+    if (input.previousTxId === "" || input.vout === "") throw "Previous tx id and vout must not be empty";
+    const vout = numToLE32(WizData.fromNumber(Number(input.vout))).hex;
+
+    hashInputs += WizData.fromHex(hexLE(input.previousTxId) + vout).hex;
+  });
+
+  return isSegwit ? hash256(WizData.fromHex(hashInputs)).toString() : sha256(WizData.fromHex(hashInputs)).toString();
+};
+
+const calculateInputAmounts = (inputs: TxInput[]) => {
+  let inputAmounts = "";
+
+  inputs.forEach((input: TxInput) => {
+    if (input.amount === "") throw "Input amounts must not be empty";
+
+    inputAmounts += numToLE64(WizData.fromNumber(Number(input.amount) * 100000000)).hex;
+  });
+
+  return sha256(WizData.fromHex(inputAmounts)).toString();
+};
+
+const calculateInputScriptPubkeys = (inputs: TxInput[]) => {
+  let inputScriptPubkeys = "";
+
+  inputs.forEach((input: TxInput) => {
+    if (input.scriptPubKey === "") throw "Input script pubkey must not be empty";
+
+    inputScriptPubkeys += size(WizData.fromHex(input.scriptPubKey)).hex + input.scriptPubKey;
+  });
+
+  return sha256(WizData.fromHex(inputScriptPubkeys)).toString();
+};
+
+const calculateInputSequences = (inputs: TxInput[]) => {
+  let inputSequences = "";
+
+  inputs.forEach((input: TxInput) => {
+    if (input.sequence === "") throw "Input script sequence must not be empty";
+
+    inputSequences += hexLE(input.sequence);
+  });
+
+  return sha256(WizData.fromHex(inputSequences)).toString();
+};
+
+export const taprootSerialization = (data: TxData) => {
+  const concat = "00";
+  const sighashType = "00";
+
+  if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
+
+  if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
+
+  const hashPrevouts = calculatePrevouts(data.inputs, false);
+
+  const inputAmountsSha = calculateInputAmounts(data.inputs);
+
+  const inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
+
+  const inputSequencesSha = calculateInputSequences(data.inputs);
+
+  const outputs = calculateHashOutputs(data.outputs, false);
+
+  const spendType = "00";
+
+  const currentIndex = numToLE32(WizData.fromNumber(data.currentInputIndex)).hex;
+
+  return concat + sighashType + version + timelock + hashPrevouts + inputAmountsSha + inputPubkeySha + inputSequencesSha + outputs + spendType + currentIndex;
 };
