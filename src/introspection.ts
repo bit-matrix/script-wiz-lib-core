@@ -71,7 +71,7 @@ export const inspectInputValue = (wizData: WizData, txInputs: TxInput[]): WizDat
 
   if (txInputLength < currentTxInputIndex + 1) throw "Input index must less than transaction inputs length!";
 
-  const currentInputAmount = numToLE64(WizData.fromNumber(Number(txInputs[currentTxInputIndex].amount) * 100000000)).hex;
+  const currentInputAmount = numToLE64(WizData.fromNumber(Math.round(Number(txInputs[currentTxInputIndex].amount)) * 100000000)).hex;
 
   if (!currentInputAmount) throw "Amount not found! Check your transaction template.";
 
