@@ -2,6 +2,7 @@ import WizData, { hexLE } from "@script-wiz/wiz-data";
 import { TxInput, TxOutput } from "./model/TxData";
 import * as crypto from "./crypto";
 import { numToLE32, numToLE64 } from "./convertion";
+import Decimal from "decimal.js";
 
 export const inspectInputOutPoint = (wizData: WizData, txInputs: TxInput[]): WizData[] => {
   let currentTxInputIndex = wizData.number;
@@ -71,7 +72,9 @@ export const inspectInputValue = (wizData: WizData, txInputs: TxInput[]): WizDat
 
   if (txInputLength < currentTxInputIndex + 1) throw "Input index must less than transaction inputs length!";
 
-  const currentInputAmount = numToLE64(WizData.fromNumber(Math.round(Number(txInputs[currentTxInputIndex].amount) * 100000000))).hex;
+  const mul = new Decimal(txInputs[currentTxInputIndex].amount).mul(new Decimal(100000000));
+
+  const currentInputAmount = numToLE64(WizData.fromNumber(mul.toNumber())).hex;
 
   if (!currentInputAmount) throw "Amount not found! Check your transaction template.";
 
@@ -198,7 +201,9 @@ export const inspectOutputValue = (wizData: WizData, txOutputs: TxOutput[]): Wiz
 
   if (txOutputLength < currentTxOutputIndex + 1) throw "Output index must less than transaction outputs length!";
 
-  const currentOutputAmount = numToLE64(WizData.fromNumber(Math.round(Number(txOutputs[currentTxOutputIndex].amount) * 100000000))).hex;
+  const mul = new Decimal(txOutputs[currentTxOutputIndex].amount).mul(new Decimal(100000000));
+
+  const currentOutputAmount = numToLE64(WizData.fromNumber(mul.toNumber())).hex;
 
   if (!currentOutputAmount) throw "Amount not found! Check your transaction template.";
 
