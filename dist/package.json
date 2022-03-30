@@ -1,6 +1,6 @@
 {
   "name": "@script-wiz/lib-core",
-  "version": "0.0.31",
+  "version": "0.0.33",
   "description": "script wiz lib core",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,7 @@
     "bech32": "^2.0.0",
     "bn.js": "^5.2.0",
     "crypto-js": "^4.1.1",
+    "decimal.js": "^10.3.1",
     "elliptic": "^6.5.4",
     "varuint-bitcoin": "^1.1.2"
   }
