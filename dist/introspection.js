@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -18,11 +22,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.inspectOutputScriptPubKey = exports.inspectOutputNonce = exports.inspectOutputValue = exports.inspectOutputAsset = exports.inspectInputSequence = exports.inspectInputIssuance = exports.inspectInputScriptPubKey = exports.inspectInputValue = exports.inspectInputAsset = exports.inspectInputOutPoint = void 0;
 var wiz_data_1 = __importStar(require("@script-wiz/wiz-data"));
 var crypto = __importStar(require("./crypto"));
 var convertion_1 = require("./convertion");
+var decimal_js_1 = __importDefault(require("decimal.js"));
 var inspectInputOutPoint = function (wizData, txInputs) {
     var currentTxInputIndex = wizData.number;
     if (wizData.hex === "00") {
@@ -83,7 +91,8 @@ var inspectInputValue = function (wizData, txInputs) {
         throw "Transaction input template must include at least an element.";
     if (txInputLength < currentTxInputIndex + 1)
         throw "Input index must less than transaction inputs length!";
-    var currentInputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(txInputs[currentTxInputIndex].amount) * 100000000)).hex;
+    var mul = new decimal_js_1.default(txInputs[currentTxInputIndex].amount).mul(new decimal_js_1.default(100000000));
+    var currentInputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(mul.toNumber())).hex;
     if (!currentInputAmount)
         throw "Amount not found! Check your transaction template.";
     return [wiz_data_1.default.fromHex(currentInputAmount), wiz_data_1.default.fromNumber(1)];
@@ -202,7 +211,8 @@ var inspectOutputValue = function (wizData, txOutputs) {
         throw "Transaction output template must include at least an element.";
     if (txOutputLength < currentTxOutputIndex + 1)
         throw "Output index must less than transaction outputs length!";
-    var currentOutputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(txOutputs[currentTxOutputIndex].amount) * 100000000)).hex;
+    var mul = new decimal_js_1.default(txOutputs[currentTxOutputIndex].amount).mul(new decimal_js_1.default(100000000));
+    var currentOutputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(mul.toNumber())).hex;
     if (!currentOutputAmount)
         throw "Amount not found! Check your transaction template.";
     return [wiz_data_1.default.fromHex(currentOutputAmount), wiz_data_1.default.fromNumber(1)];
