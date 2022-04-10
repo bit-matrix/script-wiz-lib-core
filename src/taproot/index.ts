@@ -6,7 +6,7 @@ import * as segwit_addr from "../bech32/segwit_addr";
 import bcrypto from "bcrypto";
 import { TAPROOT_VERSION } from "../model";
 import varuint from "varuint-bitcoin";
-import { createBech32Address } from "../addresses";
+import BN from "bn.js";
 
 // type TreeHelper = {
 //   data: string;
@@ -63,28 +63,50 @@ export const tagHash = (tag: string, data: WizData) => {
   return sha256(WizData.fromHex(hashedTag)).toString();
 };
 
+export const tapLeaf = (script: WizData, version: string) => {
+  const leaftag = version === "c4" ? "TapLeaf/elements" : "TapLeaf";
+  const scriptLength = varuint.encode(script.bytes.length).toString("hex");
+
+  const scriptData = version + scriptLength + script.hex;
+  const h = tagHash(leaftag, WizData.fromHex(scriptData));
+
+  return h;
+};
+
 export const treeHelper = (scripts: WizData[], version: string): string => {
   let treeHelperResultHex = "";
-  const leaftag = version === "c4" ? "TapLeaf/elements" : "TapLeaf";
   const tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
+  const scriptLength = scripts.length;
 
-  scripts.forEach((script) => {
-    const scriptLength = varuint.encode(script.bytes.length).toString("hex");
+  if (scriptLength === 1) {
+    treeHelperResultHex = tapLeaf(scripts[0], version);
+  } else {
+    for (let i = 0; i < scriptLength - 1; i += 2) {
+      const tapLeaf1 = tapLeaf(scripts[i], version);
 
-    const scriptData = version + scriptLength + script.hex;
-    const h = tagHash(leaftag, WizData.fromHex(scriptData));
+      const tapLeaf1Bn = new BN(WizData.fromHex(tapLeaf1).bin, 2);
 
-    treeHelperResultHex += h;
-  });
+      const tapLeaf2 = tapLeaf(scripts[i + 1], version);
 
-  if (scripts.length === 1) {
-    return treeHelperResultHex;
+      const tapLeaf2Bn = new BN(WizData.fromHex(tapLeaf2).bin, 2);
+      let tapBranchResult = "";
+
+      if (tapLeaf1Bn.gt(tapLeaf2Bn)) {
+        tapBranchResult = tagHash(tapBranchtag, WizData.fromHex(tapLeaf2.concat(tapLeaf1)));
+      } else {
+        tapBranchResult = tagHash(tapBranchtag, WizData.fromHex(tapLeaf1.concat(tapLeaf2)));
+      }
+
+      console.log(tapBranchResult);
+    }
   }
 
-  // multi leaf
-  const tapBranchResult: string = tagHash(tapBranchtag, WizData.fromHex(treeHelperResultHex));
+  // const treeHelperResultBn = new BN(WizData.fromHex(h).bin, 2);
 
-  return tapBranchResult;
+  // multi leaf
+  // const tapBranchResult: string = tagHash(tapBranchtag, WizData.fromHex(treeHelperResultHex));
+
+  return treeHelperResultHex;
 };
 
 // export const getVersionTaggedPubKey = (pubkey: WizData): WizData => {
