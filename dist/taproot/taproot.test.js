@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var _1 = require(".");
 var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
-var model_1 = require("../model");
 // test("xxx", () => {
 //   const x = "038a759932b19c2bf441e4e37a0243f03364df38cec1c658743dffa56c334dfb2d";
 //   const data = WizData.fromHex(x);
@@ -62,6 +61,13 @@ test("demo", function () {
     ];
     var version = "c4";
     // const treeHelperResult = treeHelper(scripts, version);
-    console.log((0, _1.tapRoot)(pubkey, scripts, model_1.TAPROOT_VERSION.LIQUID));
+    // console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.LIQUID));
+});
+test("tapBranchtag test", function () {
+    var script1 = wiz_data_1.default.fromHex("632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42");
+    var script2 = wiz_data_1.default.fromHex("c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9");
+    var tag = "TapBranch";
+    var result = (0, _1.tagHash)(tag, wiz_data_1.default.fromHex(script1.hex.concat(script2.hex)));
+    console.log(result);
 });
 //# sourceMappingURL=taproot.test.js.map

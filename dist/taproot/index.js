@@ -72,16 +72,19 @@ exports.tagHash = tagHash;
 var treeHelper = function (scripts, version) {
     var treeHelperResultHex = "";
     var leaftag = version === "c4" ? "TapLeaf/elements" : "TapLeaf";
-    // const tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
+    var tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
     scripts.forEach(function (script) {
         var scriptLength = varuint_bitcoin_1.default.encode(script.bytes.length).toString("hex");
         var scriptData = version + scriptLength + script.hex;
         var h = (0, exports.tagHash)(leaftag, wiz_data_1.default.fromHex(scriptData));
         treeHelperResultHex += h;
     });
+    if (scripts.length === 1) {
+        return treeHelperResultHex;
+    }
     // multi leaf
-    // const tapBranchResult: string = tagHash(tapBranchtag, WizData.fromHex(treeHelperResultHex));
-    return treeHelperResultHex;
+    var tapBranchResult = (0, exports.tagHash)(tapBranchtag, wiz_data_1.default.fromHex(treeHelperResultHex));
+    return tapBranchResult;
 };
 exports.treeHelper = treeHelper;
 // export const getVersionTaggedPubKey = (pubkey: WizData): WizData => {
