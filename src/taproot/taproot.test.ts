@@ -84,5 +84,15 @@ test("demo", () => {
 
   // const treeHelperResult = treeHelper(scripts, version);
 
-  console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.LIQUID));
+  // console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.LIQUID));
+});
+
+test("tapBranchtag test", () => {
+  const script1 = WizData.fromHex("632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42");
+  const script2 = WizData.fromHex("c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9");
+  const tag = "TapBranch";
+
+  const result = tagHash(tag, WizData.fromHex(script1.hex.concat(script2.hex)));
+
+  console.log(result);
 });
