@@ -66,7 +66,7 @@ export const tagHash = (tag: string, data: WizData) => {
 export const treeHelper = (scripts: WizData[], version: string): string => {
   let treeHelperResultHex = "";
   const leaftag = version === "c4" ? "TapLeaf/elements" : "TapLeaf";
-  // const tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
+  const tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
 
   scripts.forEach((script) => {
     const scriptLength = varuint.encode(script.bytes.length).toString("hex");
@@ -77,10 +77,14 @@ export const treeHelper = (scripts: WizData[], version: string): string => {
     treeHelperResultHex += h;
   });
 
-  // multi leaf
-  // const tapBranchResult: string = tagHash(tapBranchtag, WizData.fromHex(treeHelperResultHex));
+  if (scripts.length === 1) {
+    return treeHelperResultHex;
+  }
 
-  return treeHelperResultHex;
+  // multi leaf
+  const tapBranchResult: string = tagHash(tapBranchtag, WizData.fromHex(treeHelperResultHex));
+
+  return tapBranchResult;
 };
 
 // export const getVersionTaggedPubKey = (pubkey: WizData): WizData => {
