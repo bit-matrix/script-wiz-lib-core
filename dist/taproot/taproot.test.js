@@ -70,4 +70,10 @@ test("tapBranchtag test", function () {
     var result = (0, _1.tagHash)(tag, wiz_data_1.default.fromHex(script1.hex.concat(script2.hex)));
     console.log(result);
 });
+test("multileaf", function () {
+    var scripts = [wiz_data_1.default.fromHex("517551"), wiz_data_1.default.fromHex("527551"), wiz_data_1.default.fromHex("537551"), wiz_data_1.default.fromHex("547551")];
+    var version = "c0";
+    var treeHelperResult = (0, _1.treeHelper)(scripts, version);
+    console.log("multileaf", treeHelperResult);
+});
 //# sourceMappingURL=taproot.test.js.map
