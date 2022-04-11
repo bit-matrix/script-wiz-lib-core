@@ -102,7 +102,7 @@ export const controlBlockCalculation = (scripts: WizData[], version: string, inn
   let tapBranchResults: { step: number; data: WizData }[] = [];
 
   if (scriptLength === 1) {
-    throw "Doesnt support in single leaf";
+    tapBranchResults.push({ step: 0, data: WizData.fromHex(tapLeaf(scripts[0], version)) });
   } else {
     let nextLookup = tapLeaf(scripts[lookupLeafIndex], version);
 
