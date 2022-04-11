@@ -198,6 +198,10 @@ var treeHelper = function (scripts, version) {
             _loop_2(i);
         }
     }
+    var finalResult = tapBranchResults.find(function (tb) { return tb.step === leafGroupCount; });
+    if (finalResult) {
+        return finalResult.data.hex;
+    }
     return "";
 };
 exports.treeHelper = treeHelper;

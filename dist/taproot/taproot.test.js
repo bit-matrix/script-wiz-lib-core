@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var _1 = require(".");
 var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
+var model_1 = require("../model");
+var __1 = require("..");
 // test("xxx", () => {
 //   const x = "038a759932b19c2bf441e4e37a0243f03364df38cec1c658743dffa56c334dfb2d";
 //   const data = WizData.fromHex(x);
@@ -51,29 +52,32 @@ var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
 //   const result = tapRoot(WizData.fromHex(pubkey), [script1]);
 //   // console.log(result.tweak.hex);
 // });
-test("demo", function () {
-    // const tag = "TapLeaf";
-    // const input = "029000b275209997a497d964fc1a62885b05a51166a65a90df00492c8d7cf61d6accf54803beac";
-    // const result = treeHelper([WizData.fromHex(input)], "c0");
-    var pubkey = wiz_data_1.default.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
-    var scripts = [
-        wiz_data_1.default.fromHex("20cd7f33bab8a5a73182b2a1542854ba821374a36d9ee3b37ae586e28ceff4a2431b20766b6b6351b27500c8696c876700c8696c87916960b27521ac68201dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624105461704c6561662f656c656d656e747311546170547765616b2f656c656d656e747300c869557988cd5388d45688d5588853c9696b51c9696b52c9696b006b04ffffff7f6b567a766e6e6eaa7654c70100880401000000888855c7010088040200000088886d6d6d6d6d6d7551"),
-    ];
-    var version = "c4";
-    // const treeHelperResult = treeHelper(scripts, version);
-    // console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.LIQUID));
-});
-test("tapBranchtag test", function () {
-    var script1 = wiz_data_1.default.fromHex("632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42");
-    var script2 = wiz_data_1.default.fromHex("c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9");
-    var tag = "TapBranch";
-    var result = (0, _1.tagHash)(tag, wiz_data_1.default.fromHex(script1.hex.concat(script2.hex)));
-    console.log(result);
-});
+// test("demo", () => {
+//   // const tag = "TapLeaf";
+//   // const input = "029000b275209997a497d964fc1a62885b05a51166a65a90df00492c8d7cf61d6accf54803beac";
+//   // const result = treeHelper([WizData.fromHex(input)], "c0");
+//   const pubkey = WizData.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
+//   const scripts = [
+//     WizData.fromHex(
+//       "20cd7f33bab8a5a73182b2a1542854ba821374a36d9ee3b37ae586e28ceff4a2431b20766b6b6351b27500c8696c876700c8696c87916960b27521ac68201dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624105461704c6561662f656c656d656e747311546170547765616b2f656c656d656e747300c869557988cd5388d45688d5588853c9696b51c9696b52c9696b006b04ffffff7f6b567a766e6e6eaa7654c70100880401000000888855c7010088040200000088886d6d6d6d6d6d7551"
+//     ),
+//   ];
+//   const version = "c4";
+//   // const treeHelperResult = treeHelper(scripts, version);
+//   // console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.LIQUID));
+// });
+// test("tapBranchtag test", () => {
+//   const script1 = WizData.fromHex("632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42");
+//   const script2 = WizData.fromHex("c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9");
+//   const tag = "TapBranch";
+//   const result = tagHash(tag, WizData.fromHex(script1.hex.concat(script2.hex)));
+//   console.log(result);
+// });
 test("multileaf", function () {
     var scripts = [wiz_data_1.default.fromHex("517551"), wiz_data_1.default.fromHex("527551"), wiz_data_1.default.fromHex("537551"), wiz_data_1.default.fromHex("547551")];
-    var version = "c0";
-    var treeHelperResult = (0, _1.treeHelper)(scripts, version);
-    console.log("multileaf", treeHelperResult);
+    var version = model_1.TAPROOT_VERSION.BITCOIN;
+    var pubkey = wiz_data_1.default.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
+    var treeHelperResult = __1.taproot.tapRoot(pubkey, scripts, version);
+    // console.log("multileaf", treeHelperResult);
 });
 //# sourceMappingURL=taproot.test.js.map
