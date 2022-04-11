@@ -97,6 +97,7 @@ var calculateTapBranch = function (tapLeaf1, tapLeaf2, version, nextLookup) {
     }
 };
 var controlBlockCalculation = function (scripts, version, innerkey, lookupLeafIndex) {
+    var _a;
     var scriptLength = scripts.length;
     var leafGroupCount = (0, utils_1.calculateTwoPow)(scriptLength);
     var controlBlockArray = [];
@@ -150,8 +151,28 @@ var controlBlockCalculation = function (scripts, version, innerkey, lookupLeafIn
             _loop_1(i);
         }
     }
-    console.log("final result", innerkey + controlBlockArray.join(""));
-    return "";
+    var controlBlockFirstByte = "";
+    var tag = version === "c4" ? "TapTweak/elements" : "TapTweak";
+    var finalTweak = ((_a = tapBranchResults.find(function (tb) { return tb.step === leafGroupCount; })) === null || _a === void 0 ? void 0 : _a.data.hex) || "";
+    var tweak = (0, exports.tagHash)(tag, wiz_data_1.default.fromHex(innerkey + finalTweak));
+    var tweaked = (0, exports.tweakAdd)(wiz_data_1.default.fromHex(innerkey), wiz_data_1.default.fromHex(tweak));
+    if (version === "c0") {
+        if (tweaked.bytes[0].toString() === "2") {
+            controlBlockFirstByte = "c0";
+        }
+        else {
+            controlBlockFirstByte = "c1";
+        }
+    }
+    else {
+        if (tweaked.bytes[0].toString() === "2") {
+            controlBlockFirstByte = "c4";
+        }
+        else {
+            controlBlockFirstByte = "c5";
+        }
+    }
+    return controlBlockFirstByte + innerkey + controlBlockArray.join("");
 };
 exports.controlBlockCalculation = controlBlockCalculation;
 var treeHelper = function (scripts, version) {
