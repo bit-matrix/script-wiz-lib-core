@@ -150,7 +150,31 @@ export const controlBlockCalculation = (scripts: WizData[], version: string, inn
     }
   }
 
-  return innerkey + controlBlockArray.join("");
+  let controlBlockFirstByte = "";
+
+  const tag = version === "c4" ? "TapTweak/elements" : "TapTweak";
+
+  const finalTweak = tapBranchResults.find((tb) => tb.step === leafGroupCount)?.data.hex || "";
+
+  const tweak = tagHash(tag, WizData.fromHex(innerkey + finalTweak));
+
+  const tweaked = tweakAdd(WizData.fromHex(innerkey), WizData.fromHex(tweak));
+
+  if (version === "c0") {
+    if (tweaked.bytes[0].toString() === "2") {
+      controlBlockFirstByte = "c0";
+    } else {
+      controlBlockFirstByte = "c1";
+    }
+  } else {
+    if (tweaked.bytes[0].toString() === "2") {
+      controlBlockFirstByte = "c4";
+    } else {
+      controlBlockFirstByte = "c5";
+    }
+  }
+
+  return controlBlockFirstByte + innerkey + controlBlockArray.join("");
 };
 
 export const treeHelper = (scripts: WizData[], version: string): string => {

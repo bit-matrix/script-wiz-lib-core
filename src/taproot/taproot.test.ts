@@ -99,12 +99,12 @@ import { taproot } from "..";
 // });
 
 test("multileaf", () => {
-  const scripts = [WizData.fromHex("517551"), WizData.fromHex("527551"), WizData.fromHex("537551"), WizData.fromHex("547551")];
+  const scripts = [WizData.fromHex("517551"), WizData.fromHex("527551"), WizData.fromHex("537551")];
   const version = TAPROOT_VERSION.BITCOIN;
 
   const pubkey = WizData.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
 
-  const treeHelperResult = taproot.tapRoot(pubkey, scripts, version);
-
+  const treeHelperResult = taproot.controlBlockCalculation(scripts, pubkey.hex, "c0", 0);
+  console.log(treeHelperResult);
   // console.log("multileaf", treeHelperResult);
 });
