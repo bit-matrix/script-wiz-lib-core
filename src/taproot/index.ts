@@ -1,12 +1,12 @@
 import WizData from "@script-wiz/wiz-data";
 import { sha256 } from "../crypto";
-import { toHexString } from "../utils";
+import { calculateTwoPow, toHexString } from "../utils";
 import { Taproot } from "./model";
 import * as segwit_addr from "../bech32/segwit_addr";
 import bcrypto from "bcrypto";
 import { TAPROOT_VERSION } from "../model";
 import varuint from "varuint-bitcoin";
-import { createBech32Address } from "../addresses";
+import BN from "bn.js";
 
 // type TreeHelper = {
 //   data: string;
@@ -63,28 +63,169 @@ export const tagHash = (tag: string, data: WizData) => {
   return sha256(WizData.fromHex(hashedTag)).toString();
 };
 
-export const treeHelper = (scripts: WizData[], version: string): string => {
-  let treeHelperResultHex = "";
+export const tapLeaf = (script: WizData, version: string) => {
   const leaftag = version === "c4" ? "TapLeaf/elements" : "TapLeaf";
+  const scriptLength = varuint.encode(script.bytes.length).toString("hex");
+
+  const scriptData = version + scriptLength + script.hex;
+  const h = tagHash(leaftag, WizData.fromHex(scriptData));
+
+  return h;
+};
+
+const calculateTapBranch = (tapLeaf1: string, tapLeaf2: string, version: string, nextLookup?: string): { tapBranchResult: WizData; sibling: string | undefined } => {
   const tapBranchtag = version === "c4" ? "TapBranch/elements" : "TapBranch";
+  const tapLeaf1Bn = new BN(tapLeaf1, "hex");
+  const tapLeaf2Bn = new BN(tapLeaf2, "hex");
+  let sibling: string | undefined;
 
-  scripts.forEach((script) => {
-    const scriptLength = varuint.encode(script.bytes.length).toString("hex");
-
-    const scriptData = version + scriptLength + script.hex;
-    const h = tagHash(leaftag, WizData.fromHex(scriptData));
-
-    treeHelperResultHex += h;
-  });
-
-  if (scripts.length === 1) {
-    return treeHelperResultHex;
+  if (tapLeaf1 === nextLookup) {
+    sibling = tapLeaf2;
   }
 
-  // multi leaf
-  const tapBranchResult: string = tagHash(tapBranchtag, WizData.fromHex(treeHelperResultHex));
+  if (tapLeaf2 === nextLookup) {
+    sibling = tapLeaf1;
+  }
 
-  return tapBranchResult;
+  if (tapLeaf1Bn.gt(tapLeaf2Bn)) {
+    return { tapBranchResult: WizData.fromHex(tagHash(tapBranchtag, WizData.fromHex(tapLeaf2.concat(tapLeaf1)))), sibling };
+  } else {
+    return { tapBranchResult: WizData.fromHex(tagHash(tapBranchtag, WizData.fromHex(tapLeaf1.concat(tapLeaf2)))), sibling };
+  }
+};
+
+export const controlBlockCalculation = (scripts: WizData[], version: string, innerkey: string, lookupLeafIndex: number): string => {
+  const scriptLength = scripts.length;
+  const leafGroupCount = calculateTwoPow(scriptLength);
+
+  const controlBlockArray = [];
+  let tapBranchResults: { step: number; data: WizData }[] = [];
+
+  if (scriptLength === 1) {
+    throw "Doesnt support in single leaf";
+  } else {
+    let nextLookup = tapLeaf(scripts[lookupLeafIndex], version);
+
+    for (let i = 1; i <= leafGroupCount; i++) {
+      if (tapBranchResults.length > 0) {
+        const filteredTapBranchResults = tapBranchResults.filter((tp) => tp.step === i - 1);
+
+        // 2+ step
+        for (let z = 0; z < filteredTapBranchResults.length; z += 2) {
+          if (z + 1 < filteredTapBranchResults.length) {
+            const calculatedTapBranchResult = calculateTapBranch(filteredTapBranchResults[z].data.hex, filteredTapBranchResults[z + 1].data.hex, version, nextLookup);
+
+            if (calculatedTapBranchResult.sibling) {
+              controlBlockArray.push(calculatedTapBranchResult.sibling);
+              nextLookup = calculatedTapBranchResult.tapBranchResult.hex;
+            }
+
+            tapBranchResults.push({
+              step: i,
+              data: calculatedTapBranchResult.tapBranchResult,
+            });
+          } else {
+            tapBranchResults.push({ step: i, data: tapBranchResults[z].data });
+          }
+        }
+      } else {
+        // 1. step
+        for (let y = 0; y < scriptLength; y += 2) {
+          if (y + 1 < scriptLength) {
+            const tapLeaf1 = tapLeaf(scripts[y], version);
+            const tapLeaf2 = tapLeaf(scripts[y + 1], version);
+            const calculatedTapBranchResult = calculateTapBranch(tapLeaf1, tapLeaf2, version, nextLookup);
+
+            if (calculatedTapBranchResult.sibling) {
+              controlBlockArray.push(calculatedTapBranchResult.sibling);
+              nextLookup = calculatedTapBranchResult.tapBranchResult.hex;
+            }
+
+            tapBranchResults.push({ step: 1, data: calculatedTapBranchResult.tapBranchResult });
+          } else {
+            tapBranchResults.push({ step: 1, data: WizData.fromHex(tapLeaf(scripts[y], version)) });
+          }
+        }
+      }
+    }
+  }
+
+  let controlBlockFirstByte = "";
+
+  const tag = version === "c4" ? "TapTweak/elements" : "TapTweak";
+
+  const finalTweak = tapBranchResults.find((tb) => tb.step === leafGroupCount)?.data.hex || "";
+
+  const tweak = tagHash(tag, WizData.fromHex(innerkey + finalTweak));
+
+  const tweaked = tweakAdd(WizData.fromHex(innerkey), WizData.fromHex(tweak));
+
+  if (version === "c0") {
+    if (tweaked.bytes[0].toString() === "2") {
+      controlBlockFirstByte = "c0";
+    } else {
+      controlBlockFirstByte = "c1";
+    }
+  } else {
+    if (tweaked.bytes[0].toString() === "2") {
+      controlBlockFirstByte = "c4";
+    } else {
+      controlBlockFirstByte = "c5";
+    }
+  }
+
+  return controlBlockFirstByte + innerkey + controlBlockArray.join("");
+};
+
+export const treeHelper = (scripts: WizData[], version: string): string => {
+  const scriptLength = scripts.length;
+  const leafGroupCount = calculateTwoPow(scriptLength);
+
+  let tapBranchResults: { step: number; data: WizData }[] = [];
+
+  if (scriptLength === 1) {
+    return tapLeaf(scripts[0], version);
+  } else {
+    for (let i = 1; i <= leafGroupCount; i++) {
+      if (tapBranchResults.length > 0) {
+        const filteredTapBranchResults = tapBranchResults.filter((tp) => tp.step === i - 1);
+
+        // 2+ step
+        for (let z = 0; z < filteredTapBranchResults.length; z += 2) {
+          if (z + 1 < filteredTapBranchResults.length) {
+            const calculatedTapBranchResult = calculateTapBranch(filteredTapBranchResults[z].data.hex, filteredTapBranchResults[z + 1].data.hex, version);
+            tapBranchResults.push({
+              step: i,
+              data: calculatedTapBranchResult.tapBranchResult,
+            });
+          } else {
+            tapBranchResults.push({ step: i, data: tapBranchResults[z].data });
+          }
+        }
+      } else {
+        // 1. step
+        for (let y = 0; y < scriptLength; y += 2) {
+          if (y + 1 < scriptLength) {
+            const tapLeaf1 = tapLeaf(scripts[y], version);
+            const tapLeaf2 = tapLeaf(scripts[y + 1], version);
+            const calculatedTapBranchResult = calculateTapBranch(tapLeaf1, tapLeaf2, version);
+
+            tapBranchResults.push({ step: 1, data: calculatedTapBranchResult.tapBranchResult });
+          } else {
+            tapBranchResults.push({ step: 1, data: WizData.fromHex(tapLeaf(scripts[y], version)) });
+          }
+        }
+      }
+    }
+  }
+
+  const finalResult = tapBranchResults.find((tb) => tb.step === leafGroupCount);
+
+  if (finalResult) {
+    return finalResult.data.hex;
+  }
+
+  return "";
 };
 
 // export const getVersionTaggedPubKey = (pubkey: WizData): WizData => {

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toHexString = exports.flipbits = exports.NEGATIVE_1_64 = exports.MIN_INTEGER_64 = exports.MAX_INTEGER_64 = exports.ZERO_64 = void 0;
+exports.calculateTwoPow = exports.signdecimalToBinary = exports.toHexString = exports.flipbits = exports.NEGATIVE_1_64 = exports.MIN_INTEGER_64 = exports.MAX_INTEGER_64 = exports.ZERO_64 = void 0;
 var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
 var bn_js_1 = __importDefault(require("bn.js"));
 var convertion_1 = require("../convertion");
@@ -24,4 +24,18 @@ var toHexString = function (byteArray) {
     }).join("");
 };
 exports.toHexString = toHexString;
+var signdecimalToBinary = function (decimalValue) {
+    return (decimalValue >>> 0).toString(2);
+};
+exports.signdecimalToBinary = signdecimalToBinary;
+var calculateTwoPow = function (value) {
+    var valueBin = (0, exports.signdecimalToBinary)(value);
+    var valueBinArray = valueBin.split("");
+    var isCurrent2 = valueBinArray.filter(function (arr) { return arr === "1"; });
+    if (isCurrent2.length === 1) {
+        return valueBinArray.length - 1;
+    }
+    return valueBinArray.length;
+};
+exports.calculateTwoPow = calculateTwoPow;
 //# sourceMappingURL=index.js.map
