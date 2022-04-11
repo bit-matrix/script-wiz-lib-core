@@ -96,3 +96,12 @@ test("tapBranchtag test", () => {
 
   console.log(result);
 });
+
+test("multileaf", () => {
+  const scripts = [WizData.fromHex("517551"), WizData.fromHex("527551"), WizData.fromHex("537551"), WizData.fromHex("547551")];
+  const version = "c0";
+
+  const treeHelperResult = treeHelper(scripts, version);
+
+  console.log("multileaf", treeHelperResult);
+});
