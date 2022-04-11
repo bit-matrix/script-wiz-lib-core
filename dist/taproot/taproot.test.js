@@ -74,10 +74,10 @@ var __1 = require("..");
 //   console.log(result);
 // });
 test("multileaf", function () {
-    var scripts = [wiz_data_1.default.fromHex("517551"), wiz_data_1.default.fromHex("527551"), wiz_data_1.default.fromHex("537551")];
+    var scripts = [wiz_data_1.default.fromHex("517551")];
     var version = model_1.TAPROOT_VERSION.BITCOIN;
     var pubkey = wiz_data_1.default.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
-    var treeHelperResult = __1.taproot.controlBlockCalculation(scripts, pubkey.hex, "c0", 0);
+    var treeHelperResult = __1.taproot.controlBlockCalculation(scripts, "c0", pubkey.hex, 0);
     console.log(treeHelperResult);
     // console.log("multileaf", treeHelperResult);
 });

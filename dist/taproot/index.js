@@ -103,7 +103,7 @@ var controlBlockCalculation = function (scripts, version, innerkey, lookupLeafIn
     var controlBlockArray = [];
     var tapBranchResults = [];
     if (scriptLength === 1) {
-        throw "Doesnt support in single leaf";
+        tapBranchResults.push({ step: 0, data: wiz_data_1.default.fromHex((0, exports.tapLeaf)(scripts[0], version)) });
     }
     else {
         var nextLookup = (0, exports.tapLeaf)(scripts[lookupLeafIndex], version);
