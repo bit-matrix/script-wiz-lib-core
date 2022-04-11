@@ -19,3 +19,20 @@ export const toHexString = (byteArray: Uint8Array) => {
     return ("0" + (byte & 0xff).toString(16)).slice(-2);
   }).join("");
 };
+
+export const signdecimalToBinary = (decimalValue: number): string => {
+  return (decimalValue >>> 0).toString(2);
+};
+
+export const calculateTwoPow = (value: number) => {
+  const valueBin = signdecimalToBinary(value);
+  const valueBinArray = valueBin.split("");
+
+  const isCurrent2 = valueBinArray.filter((arr) => arr === "1");
+
+  if (isCurrent2.length === 1) {
+    return valueBinArray.length - 1;
+  }
+
+  return valueBinArray.length;
+};
