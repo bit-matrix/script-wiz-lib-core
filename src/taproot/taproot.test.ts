@@ -1,6 +1,7 @@
 import { tagHash, tapRoot, treeHelper, tweakAdd } from ".";
 import WizData from "@script-wiz/wiz-data";
 import { TAPROOT_VERSION } from "../model";
+import { taproot } from "..";
 
 // test("xxx", () => {
 //   const x = "038a759932b19c2bf441e4e37a0243f03364df38cec1c658743dffa56c334dfb2d";
@@ -68,40 +69,42 @@ import { TAPROOT_VERSION } from "../model";
 //   // console.log(result.tweak.hex);
 // });
 
-test("demo", () => {
-  // const tag = "TapLeaf";
-  // const input = "029000b275209997a497d964fc1a62885b05a51166a65a90df00492c8d7cf61d6accf54803beac";
+// test("demo", () => {
+//   // const tag = "TapLeaf";
+//   // const input = "029000b275209997a497d964fc1a62885b05a51166a65a90df00492c8d7cf61d6accf54803beac";
 
-  // const result = treeHelper([WizData.fromHex(input)], "c0");
+//   // const result = treeHelper([WizData.fromHex(input)], "c0");
 
-  const pubkey = WizData.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
-  const scripts = [
-    WizData.fromHex(
-      "20cd7f33bab8a5a73182b2a1542854ba821374a36d9ee3b37ae586e28ceff4a2431b20766b6b6351b27500c8696c876700c8696c87916960b27521ac68201dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624105461704c6561662f656c656d656e747311546170547765616b2f656c656d656e747300c869557988cd5388d45688d5588853c9696b51c9696b52c9696b006b04ffffff7f6b567a766e6e6eaa7654c70100880401000000888855c7010088040200000088886d6d6d6d6d6d7551"
-    ),
-  ];
-  const version = "c4";
+//   const pubkey = WizData.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
+//   const scripts = [
+//     WizData.fromHex(
+//       "20cd7f33bab8a5a73182b2a1542854ba821374a36d9ee3b37ae586e28ceff4a2431b20766b6b6351b27500c8696c876700c8696c87916960b27521ac68201dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624105461704c6561662f656c656d656e747311546170547765616b2f656c656d656e747300c869557988cd5388d45688d5588853c9696b51c9696b52c9696b006b04ffffff7f6b567a766e6e6eaa7654c70100880401000000888855c7010088040200000088886d6d6d6d6d6d7551"
+//     ),
+//   ];
+//   const version = "c4";
 
-  // const treeHelperResult = treeHelper(scripts, version);
+//   // const treeHelperResult = treeHelper(scripts, version);
 
-  // console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.LIQUID));
-});
+//   // console.log(tapRoot(pubkey, scripts, TAPROOT_VERSION.LIQUID));
+// });
 
-test("tapBranchtag test", () => {
-  const script1 = WizData.fromHex("632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42");
-  const script2 = WizData.fromHex("c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9");
-  const tag = "TapBranch";
+// test("tapBranchtag test", () => {
+//   const script1 = WizData.fromHex("632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42");
+//   const script2 = WizData.fromHex("c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9");
+//   const tag = "TapBranch";
 
-  const result = tagHash(tag, WizData.fromHex(script1.hex.concat(script2.hex)));
+//   const result = tagHash(tag, WizData.fromHex(script1.hex.concat(script2.hex)));
 
-  console.log(result);
-});
+//   console.log(result);
+// });
 
 test("multileaf", () => {
   const scripts = [WizData.fromHex("517551"), WizData.fromHex("527551"), WizData.fromHex("537551"), WizData.fromHex("547551")];
-  const version = "c0";
+  const version = TAPROOT_VERSION.BITCOIN;
 
-  const treeHelperResult = treeHelper(scripts, version);
+  const pubkey = WizData.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
 
-  console.log("multileaf", treeHelperResult);
+  const treeHelperResult = taproot.tapRoot(pubkey, scripts, version);
+
+  // console.log("multileaf", treeHelperResult);
 });

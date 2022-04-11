@@ -196,7 +196,11 @@ export const treeHelper = (scripts: WizData[], version: string): string => {
     }
   }
 
-  return "";
+  return (
+    tapBranchResults.find((tb) => {
+      tb.step === leafGroupCount;
+    })?.data.hex || ""
+  );
 };
 
 // export const getVersionTaggedPubKey = (pubkey: WizData): WizData => {
