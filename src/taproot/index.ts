@@ -150,8 +150,7 @@ export const controlBlockCalculation = (scripts: WizData[], version: string, inn
     }
   }
 
-  console.log("final result", innerkey + controlBlockArray.join(""));
-  return "";
+  return innerkey + controlBlockArray.join("");
 };
 
 export const treeHelper = (scripts: WizData[], version: string): string => {
