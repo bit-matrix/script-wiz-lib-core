@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TAPROOT_VERSION = exports.taproot = exports.stacks = exports.splices = exports.locktime = exports.introspection = exports.crypto = exports.arithmetics64 = exports.convertion = exports.bitwise = exports.arithmetics = exports.address = void 0;
+exports.TAPROOT_VERSION = exports.sha256d = exports.taproot = exports.stacks = exports.splices = exports.locktime = exports.introspection = exports.crypto = exports.arithmetics64 = exports.convertion = exports.bitwise = exports.arithmetics = exports.address = void 0;
 var address = __importStar(require("./addresses"));
 exports.address = address;
 var arithmetics = __importStar(require("./arithmetics"));
@@ -40,6 +40,8 @@ var splices = __importStar(require("./splices"));
 exports.splices = splices;
 var stacks = __importStar(require("./stacks"));
 exports.stacks = stacks;
+var sha256d = __importStar(require("./sha256d"));
+exports.sha256d = sha256d;
 var taproot = __importStar(require("./taproot"));
 exports.taproot = taproot;
 var model_1 = require("./model");
