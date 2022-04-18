@@ -8,5 +8,5 @@ test("add 64 function test", () => {
 
   const result = sub64(input1, input2);
 
-  // console.log(result);
+  console.log(result);
 });
