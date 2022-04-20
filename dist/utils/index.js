@@ -8,8 +8,8 @@ var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
 var bn_js_1 = __importDefault(require("bn.js"));
 var convertion_1 = require("../convertion");
 exports.ZERO_64 = new bn_js_1.default((0, convertion_1.convert64)(wiz_data_1.default.fromHex("00")).bin, 2);
-exports.MAX_INTEGER_64 = new bn_js_1.default("1111111111111111111111111111111111111111111111111111111101111111", 2);
-exports.MIN_INTEGER_64 = new bn_js_1.default("0000000000000000000000000000000000000000000000000000000000000001", 2);
+exports.MAX_INTEGER_64 = new bn_js_1.default("0111111111111111111111111111111111111111111111111111111111111111", 2);
+exports.MIN_INTEGER_64 = new bn_js_1.default("1000000010000000000000000000000000000000000000000000000000000000", 2);
 exports.NEGATIVE_1_64 = new bn_js_1.default("0000000000000000000000000000000000000000000000000000000010000001", 2);
 var flipbits = function (str) {
     return str

@@ -12,16 +12,13 @@ var add64 = function (wizData, wizData2) {
         throw "Input bytes length must be equal 8 byte";
     var a = new bn_js_1.default(wizData.bin, 2);
     var b = new bn_js_1.default(wizData2.bin, 2);
-    var isANeg = wizData.bin.charAt(0) === "1";
-    if ((!isANeg && b.gt(utils_1.MAX_INTEGER_64.sub(a))) || (isANeg && b.lt(utils_1.MIN_INTEGER_64.sub(a)))) {
+    var addedValue = a.add(b);
+    if (addedValue.byteLength() > 8) {
         return [wiz_data_1.default.fromNumber(0)];
     }
-    else {
-        var addedValue = a.add(b);
-        var addedValueBin = addedValue.toString(2, 64);
-        var modifiedAddedValueBin = addedValueBin.slice(-64);
-        return [wiz_data_1.default.fromBin(modifiedAddedValueBin), wiz_data_1.default.fromNumber(1)];
-    }
+    var addedValueBin = addedValue.toString(2, 64);
+    var modifiedAddedValueBin = addedValueBin.slice(-64);
+    return [wiz_data_1.default.fromBin(modifiedAddedValueBin), wiz_data_1.default.fromNumber(1)];
 };
 exports.add64 = add64;
 var sub64 = function (wizData, wizData2) {
@@ -29,18 +26,15 @@ var sub64 = function (wizData, wizData2) {
         throw "Input bytes length must be equal 8 byte";
     var a = new bn_js_1.default(wizData.bin, 2);
     var b = new bn_js_1.default(wizData2.bin, 2);
-    var isBNeg = wizData2.bin.charAt(0) === "1";
-    if ((!isBNeg && a.lt(utils_1.MIN_INTEGER_64.add(b))) || (isBNeg && a.gt(utils_1.MAX_INTEGER_64.add(b)))) {
+    var subValue = a.sub(b);
+    if (subValue.byteLength() > 8) {
         return [wiz_data_1.default.fromNumber(0)];
     }
-    else {
-        var subValue = a.sub(b);
-        var subValueBin = subValue.toString(2, 64);
-        if (subValue.isNeg())
-            subValueBin = subValue.toTwos(64).toString(2, 64);
-        var modifiedSubValueBin = subValueBin.slice(-64);
-        return [wiz_data_1.default.fromBin(modifiedSubValueBin), wiz_data_1.default.fromNumber(1)];
-    }
+    var subValueBin = subValue.toString(2, 64);
+    if (subValue.isNeg())
+        subValueBin = subValue.toTwos(64).toString(2, 64);
+    var modifiedSubValueBin = subValueBin.slice(-64);
+    return [wiz_data_1.default.fromBin(modifiedSubValueBin), wiz_data_1.default.fromNumber(1)];
 };
 exports.sub64 = sub64;
 var mul64 = function (wizData, wizData2) {
@@ -48,19 +42,13 @@ var mul64 = function (wizData, wizData2) {
         throw "Input bytes length must be equal 8 byte";
     var a = new bn_js_1.default(wizData.bin, 2);
     var b = new bn_js_1.default(wizData2.bin, 2);
-    var isANeg = wizData.bin.charAt(0) === "1";
-    if ((!isANeg && b.gt(utils_1.ZERO_64) && a.gt(utils_1.MAX_INTEGER_64.div(b))) ||
-        (!isANeg && b.lt(utils_1.ZERO_64) && b.lt(utils_1.MIN_INTEGER_64.div(a))) ||
-        (isANeg && b.gt(utils_1.ZERO_64) && a.lt(utils_1.MIN_INTEGER_64.div(b))) ||
-        (isANeg && b.lt(utils_1.ZERO_64) && b.lt(utils_1.MAX_INTEGER_64.div(a)))) {
+    var mulValue = a.mul(b);
+    if (mulValue.byteLength() > 8) {
         return [wiz_data_1.default.fromNumber(0)];
     }
-    else {
-        var mulValue = a.mul(b);
-        var mulValueBin = mulValue.toString(2, 64);
-        var modifiedMulValueBin = mulValueBin.slice(-64);
-        return [wiz_data_1.default.fromBin(modifiedMulValueBin), wiz_data_1.default.fromNumber(1)];
-    }
+    var mulValueBin = mulValue.toString(2, 64);
+    var modifiedMulValueBin = mulValueBin.slice(-64);
+    return [wiz_data_1.default.fromBin(modifiedMulValueBin), wiz_data_1.default.fromNumber(1)];
 };
 exports.mul64 = mul64;
 var div64 = function (wizData, wizData2) {
