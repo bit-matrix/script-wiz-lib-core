@@ -199,7 +199,7 @@ export const treeHelper = (scripts: WizData[], version: string): string => {
               data: calculatedTapBranchResult.tapBranchResult,
             });
           } else {
-            tapBranchResults.push({ step: i, data: tapBranchResults[z].data });
+            tapBranchResults.push({ step: i, data: filteredTapBranchResults[z].data });
           }
         }
       } else {
