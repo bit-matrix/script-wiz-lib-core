@@ -196,7 +196,7 @@ var treeHelper = function (scripts, version) {
                         });
                     }
                     else {
-                        tapBranchResults.push({ step: i, data: tapBranchResults[z].data });
+                        tapBranchResults.push({ step: i, data: filteredTapBranchResults[z].data });
                     }
                 }
             }
