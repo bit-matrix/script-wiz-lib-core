@@ -7,6 +7,7 @@ import { publicKeyTweakCheckWithPrefix } from "./taproot";
 import { TxData } from "./model";
 import { segwitSerialization, taprootSerialization } from "./serialization";
 import { VM_NETWORK_VERSION } from "./taproot/model";
+import { taproot } from ".";
 
 // TO DO @afarukcali review
 
@@ -84,11 +85,13 @@ export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: Tx
   // stackData 2 = pubkey
 
   const message = version === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData);
-  const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
   if (version === VM_NETWORK_VERSION.TAPSCRIPT) {
-    return shnorrSigVerify(wizData, hashedMessage, wizData2);
+    const tagHashResult = WizData.fromHex(taproot.tagHash("TapSighash", WizData.fromHex(message)));
+
+    return shnorrSigVerify(wizData, tagHashResult, wizData2);
   }
+  const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
   return ecdsaVerify(wizData, hashedMessage, wizData2);
 };

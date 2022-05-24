@@ -68,7 +68,7 @@ const calculateHashOutputs = (outputs: TxOutput[], isSegwit = true) => {
   outputs.forEach((output: TxOutput) => {
     if (output.amount === "" || output.scriptPubKey === "") throw "Amount and scriptPubkey must not be empty in output transaction template";
 
-    hashOutputs += numToLE64(WizData.fromNumber(Number(output.amount) * 100000000)).hex + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
+    hashOutputs += numToLE64(WizData.fromNumber(Number(output.amount))).hex + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
   });
 
   return isSegwit ? hash256(WizData.fromHex(hashOutputs)).toString() : sha256(WizData.fromHex(hashOutputs)).toString();
@@ -92,8 +92,7 @@ const calculateInputAmounts = (inputs: TxInput[]) => {
 
   inputs.forEach((input: TxInput) => {
     if (input.amount === "") throw "Input amounts must not be empty";
-
-    inputAmounts += numToLE64(WizData.fromNumber(Number(input.amount) * 100000000)).hex;
+    inputAmounts += numToLE64(WizData.fromNumber(Number(input.amount))).hex;
   });
 
   return sha256(WizData.fromHex(inputAmounts)).toString();
