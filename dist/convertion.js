@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64 = exports.convert64 = void 0;
+exports.LE32ToNum = exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64 = exports.convert64 = void 0;
 var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
 var bn_js_1 = __importDefault(require("bn.js"));
 var convert64 = function (wizData) {
@@ -94,6 +94,40 @@ var LE32toLE64 = function (wizData) {
     return (0, exports.numToLE64)(wizData);
 };
 exports.LE32toLE64 = LE32toLE64;
+var LE32ToNum = function (wizData) {
+    var inputBytes = wizData.bytes;
+    if (inputBytes.length !== 4)
+        throw "Input byte length must be equal 4 byte";
+    var inputArray = Array.from(wizData.bytes);
+    var i = 3;
+    while (i >= 0) {
+        if (inputArray[i] === 0) {
+            inputArray.pop();
+            i--;
+        }
+        else {
+            break;
+        }
+    }
+    var lastElement = wiz_data_1.default.fromNumber(inputArray[inputArray.length - 1]);
+    var misingByte = lastElement.bytes.length > 1 ? 1 : 0;
+    var inputBN = new bn_js_1.default(wizData.bin, 2);
+    var inputBnByteLength = inputBN.byteLength() + misingByte;
+    if (wizData.bin.charAt(0) === "1") {
+        var binputPos = inputBN.fromTwos(32).abs();
+        var inputWizData = wiz_data_1.default.fromBin(binputPos.toString(2, (binputPos.byteLength() + misingByte) * 4));
+        if (inputWizData.number) {
+            return wiz_data_1.default.fromNumber(inputWizData.number * -1);
+        }
+        return inputWizData;
+    }
+    var finalBinValue = inputBN.toString(2, inputBnByteLength * 4);
+    if (finalBinValue === "0") {
+        return wiz_data_1.default.fromNumber(0);
+    }
+    return wiz_data_1.default.fromBin(finalBinValue);
+};
+exports.LE32ToNum = LE32ToNum;
 // LE64TONum alternative
 // export const LE64ToNum = (wizData: WizData): WizData => {
 //   const inputBytes = wizData.bytes;
