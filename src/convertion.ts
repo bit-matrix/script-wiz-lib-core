@@ -112,6 +112,51 @@ export const LE32toLE64 = (wizData: WizData): WizData => {
   return numToLE64(wizData);
 };
 
+export const LE32ToNum = (wizData: WizData): WizData => {
+  const inputBytes = wizData.bytes;
+
+  if (inputBytes.length !== 4) throw "Input byte length must be equal 4 byte";
+
+  let inputArray = Array.from(wizData.bytes);
+  let i = 3;
+
+  while (i >= 0) {
+    if (inputArray[i] === 0) {
+      inputArray.pop();
+      i--;
+    } else {
+      break;
+    }
+  }
+
+  const lastElement = WizData.fromNumber(inputArray[inputArray.length - 1]);
+  const misingByte = lastElement.bytes.length > 1 ? 1 : 0;
+
+  const inputBN = new BN(wizData.bin, 2);
+
+  const inputBnByteLength = inputBN.byteLength() + misingByte;
+
+  if (wizData.bin.charAt(0) === "1") {
+    const binputPos = inputBN.fromTwos(32).abs();
+
+    const inputWizData = WizData.fromBin(binputPos.toString(2, (binputPos.byteLength() + misingByte) * 4));
+
+    if (inputWizData.number) {
+      return WizData.fromNumber(inputWizData.number * -1);
+    }
+
+    return inputWizData;
+  }
+
+  const finalBinValue = inputBN.toString(2, inputBnByteLength * 4);
+
+  if (finalBinValue === "0") {
+    return WizData.fromNumber(0);
+  }
+
+  return WizData.fromBin(finalBinValue);
+};
+
 // LE64TONum alternative
 // export const LE64ToNum = (wizData: WizData): WizData => {
 //   const inputBytes = wizData.bytes;
