@@ -1,10 +1,26 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkSequenceVerify = exports.checkLockTimeVerify = void 0;
-var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
+var wiz_data_1 = __importStar(require("@script-wiz/wiz-data"));
 var checkLockTimeVerify = function (input, txData) {
     var timelockNumber = Number(txData.timelock);
     var inputNumber = input.number;
@@ -36,17 +52,14 @@ var checkSequenceVerify = function (input, txData) {
         throw "Input number is invalid";
     if (txData.version === "")
         throw "Transaction template version is empty";
-    var transactionSequenceNumber = wiz_data_1.default.fromHex(txData.inputs[txData.currentInputIndex].sequence);
     if (txData.inputs[txData.currentInputIndex].sequence === "")
         throw "Sequence must not be empty in transaction template";
-    if (transactionSequenceNumber.number === undefined)
-        throw "Transaction template sequence is invalid";
-    var inputUnitValue = parseInt(input.bin.slice(16, 33), 2);
+    var transactionSequenceNumber = wiz_data_1.default.fromHex((0, wiz_data_1.hexLE)(txData.inputs[txData.currentInputIndex].sequence));
     var inputDisableFlag = input.bin[0];
     var inputTypeFlag = input.bin[9];
     var transactionBlockUnitValue = parseInt(transactionSequenceNumber.bin.slice(16, 33), 2);
     var transactionTypeFlag = transactionSequenceNumber.bin[9];
-    if (inputUnitValue > transactionBlockUnitValue)
+    if (input.number > transactionBlockUnitValue)
         return wiz_data_1.default.fromNumber(0);
     if (Number(txData.version) < 2)
         return wiz_data_1.default.fromNumber(0);
