@@ -27,19 +27,16 @@ export const checkLockTimeVerify = (input: WizData, txData: TxData): WizData => 
 export const checkSequenceVerify = (input: WizData, txData: TxData): WizData => {
   if (input.number === undefined) throw "Input number is invalid";
   if (txData.version === "") throw "Transaction template version is empty";
-
-  const transactionSequenceNumber = WizData.fromHex(txData.inputs[txData.currentInputIndex].sequence);
   if (txData.inputs[txData.currentInputIndex].sequence === "") throw "Sequence must not be empty in transaction template";
 
-  if (transactionSequenceNumber.number === undefined) throw "Transaction template sequence is invalid";
+  const transactionSequenceNumber = WizData.fromHex(hexLE(txData.inputs[txData.currentInputIndex].sequence));
 
-  const inputUnitValue = parseInt(input.bin.slice(16, 33), 2);
   const inputDisableFlag = input.bin[0];
   const inputTypeFlag = input.bin[9];
   const transactionBlockUnitValue = parseInt(transactionSequenceNumber.bin.slice(16, 33), 2);
   const transactionTypeFlag = transactionSequenceNumber.bin[9];
 
-  if (inputUnitValue > transactionBlockUnitValue) return WizData.fromNumber(0);
+  if (input.number > transactionBlockUnitValue) return WizData.fromNumber(0);
   if (Number(txData.version) < 2) return WizData.fromNumber(0);
   if (input.number < 0) return WizData.fromNumber(0);
   if (Number(inputDisableFlag) !== 0) return WizData.fromNumber(0);

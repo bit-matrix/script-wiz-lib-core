@@ -16,20 +16,20 @@ import { checkLockTimeVerify, checkSequenceVerify } from "../locktime";
 // });
 
 test("LockTime checkSequenceVerify test", () => {
-  const wizData: WizData = WizData.fromNumber(4194336);
+  const wizData: WizData = WizData.fromNumber(2);
   const txData: TxData = {
     inputs: [
       {
         previousTxId: "",
         vout: "",
-        sequence: "00400020",
+        sequence: "00000002",
         scriptPubKey: "",
         amount: "",
         assetId: "",
       },
     ],
     outputs: [],
-    version: "7",
+    version: "2",
     timelock: "",
     currentInputIndex: 0,
   };
