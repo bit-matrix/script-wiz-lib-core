@@ -191,7 +191,7 @@ var withIn = function (wizData, wizData2, wizData3) {
     var minValue = wizData2.number;
     var maxValue = wizData3.number;
     if (currentNumber !== undefined && minValue !== undefined && maxValue !== undefined) {
-        if (currentNumber >= minValue && currentNumber <= maxValue)
+        if (currentNumber >= minValue && currentNumber < maxValue)
             return wiz_data_1.default.fromNumber(1);
         return wiz_data_1.default.fromNumber(0);
     }
