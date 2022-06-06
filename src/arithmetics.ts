@@ -207,7 +207,7 @@ export const withIn = (wizData: WizData, wizData2: WizData, wizData3: WizData): 
   const maxValue = wizData3.number;
 
   if (currentNumber !== undefined && minValue !== undefined && maxValue !== undefined) {
-    if (currentNumber >= minValue && currentNumber <= maxValue) return WizData.fromNumber(1);
+    if (currentNumber >= minValue && currentNumber < maxValue) return WizData.fromNumber(1);
 
     return WizData.fromNumber(0);
   }
