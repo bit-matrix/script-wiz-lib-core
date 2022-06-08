@@ -1,10 +1,33 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LE32ToNum = exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64 = exports.convert64 = void 0;
-var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
+exports.inputConverter = exports.LE32ToNum = exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64 = exports.convert64 = void 0;
+var wiz_data_1 = __importStar(require("@script-wiz/wiz-data"));
 var bn_js_1 = __importDefault(require("bn.js"));
 var convert64 = function (wizData) {
     var isNegate = wizData.bin.charAt(0) === "1";
@@ -144,4 +167,85 @@ exports.LE32ToNum = LE32ToNum;
 //   const finalResult = new Uint8Array(result);
 //   return WizData.fromBytes(finalResult);
 // };
+var inputConverter = function (value, type, byteLength) {
+    var _a, _b, _c, _d;
+    if (byteLength === "8-bytes") {
+        if (type === "BE") {
+            var valueWizData = wiz_data_1.default.fromHex(value);
+            console.log(valueWizData);
+            //le
+            var le = (0, wiz_data_1.hexLE)(valueWizData.hex);
+            console.log(le);
+            //decimal
+            var leWizData = wiz_data_1.default.fromHex(le);
+            var decimal = (_a = (0, exports.LE64ToNum)(leWizData).number) === null || _a === void 0 ? void 0 : _a.toString();
+            console.log(decimal);
+            return { be: value, le: le, decimal: decimal || "" };
+        }
+        if (type === "LE") {
+            var valueWizData = wiz_data_1.default.fromHex(value);
+            console.log(valueWizData);
+            //be
+            var be = (0, wiz_data_1.hexLE)(valueWizData.hex);
+            console.log(be);
+            //decimal
+            var decimal = (_b = (0, exports.LE64ToNum)(valueWizData).number) === null || _b === void 0 ? void 0 : _b.toString();
+            console.log(decimal);
+            return { be: be, le: value, decimal: decimal || "" };
+        }
+        if (type === "Decimal") {
+            //decimal
+            var sathoshi = Number(value) * 100000000;
+            console.log(sathoshi.toString());
+            var sathoshiWizData = wiz_data_1.default.fromNumber(sathoshi);
+            console.log(sathoshiWizData);
+            //le
+            var le = (0, exports.numToLE64)(sathoshiWizData);
+            console.log(le.hex);
+            //be
+            var beHex = (0, wiz_data_1.hexLE)(le.hex);
+            console.log(beHex);
+            return { be: beHex, le: le.hex, decimal: sathoshi.toString() };
+        }
+    }
+    if (byteLength === "4-bytes") {
+        if (type === "BE") {
+            var valueWizData = wiz_data_1.default.fromHex(value);
+            console.log(valueWizData);
+            //le
+            var le = (0, wiz_data_1.hexLE)(valueWizData.hex);
+            console.log(le);
+            //decimal
+            var leWizData = wiz_data_1.default.fromHex(le);
+            var decimal = (_c = (0, exports.LE32ToNum)(leWizData).number) === null || _c === void 0 ? void 0 : _c.toString();
+            console.log(decimal);
+            return { be: value, le: le, decimal: decimal || "" };
+        }
+        if (type === "LE") {
+            var valueWizData = wiz_data_1.default.fromHex(value);
+            console.log(valueWizData);
+            //be
+            var be = (0, wiz_data_1.hexLE)(valueWizData.hex);
+            console.log(be);
+            //decimal
+            var decimal = (_d = (0, exports.LE32ToNum)(valueWizData).number) === null || _d === void 0 ? void 0 : _d.toString();
+            console.log(decimal);
+            return { be: be, le: value, decimal: decimal || "" };
+        }
+        if (type === "Decimal") {
+            //decimal
+            var sathoshiWizData = wiz_data_1.default.fromNumber(Number(value));
+            console.log("sathoshiWizData", sathoshiWizData);
+            //le
+            var le = (0, exports.numToLE32)(sathoshiWizData);
+            console.log("leHex", le.hex);
+            //be
+            var beHex = (0, wiz_data_1.hexLE)(le.hex);
+            console.log(beHex);
+            return { be: beHex, le: le.hex, decimal: value };
+        }
+    }
+    return { decimal: "", le: "", be: "" };
+};
+exports.inputConverter = inputConverter;
 //# sourceMappingURL=convertion.js.map
