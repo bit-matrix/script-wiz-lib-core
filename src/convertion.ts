@@ -185,31 +185,25 @@ export const inputConverter = (value: string, type: "BE" | "LE" | "Decimal", byt
   if (byteLength === "8-bytes") {
     if (type === "BE") {
       const valueWizData = WizData.fromHex(value);
-      console.log(valueWizData);
 
       //le
       const le = hexLE(valueWizData.hex);
-      console.log(le);
 
       //decimal
       const leWizData = WizData.fromHex(le);
       const decimal = LE64ToNum(leWizData).number?.toString();
-      console.log(decimal);
 
       return { be: value, le, decimal: decimal || "" };
     }
 
     if (type === "LE") {
       const valueWizData = WizData.fromHex(value);
-      console.log(valueWizData);
 
       //be
       const be = hexLE(valueWizData.hex);
-      console.log(be);
 
       //decimal
       const decimal = LE64ToNum(valueWizData).number?.toString();
-      console.log(decimal);
 
       return { be, le: value, decimal: decimal || "" };
     }
@@ -217,20 +211,15 @@ export const inputConverter = (value: string, type: "BE" | "LE" | "Decimal", byt
     if (type === "Decimal") {
       //decimal
       const sathoshi = Number(value) * 100000000;
-      console.log(sathoshi.toString());
-
       const sathoshiWizData = WizData.fromNumber(sathoshi);
-      console.log(sathoshiWizData);
 
       //le
       const le = numToLE64(sathoshiWizData);
-      console.log(le.hex);
 
       //be
       const beHex = hexLE(le.hex);
-      console.log(beHex);
 
-      return { be: beHex, le: le.hex, decimal: sathoshi.toString() };
+      return { be: beHex, le: le.hex, decimal: value };
     }
   }
 
