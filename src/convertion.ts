@@ -1,4 +1,4 @@
-import WizData from "@script-wiz/wiz-data";
+import WizData, { hexLE } from "@script-wiz/wiz-data";
 import BN from "bn.js";
 
 export const convert64 = (wizData: WizData): WizData => {
@@ -180,3 +180,108 @@ export const LE32ToNum = (wizData: WizData): WizData => {
 
 //   return WizData.fromBytes(finalResult);
 // };
+
+export const inputConverter = (value: string, type: "BE" | "LE" | "Decimal", byteLength: "4-bytes" | "8-bytes"): { be: string; le: string; decimal: string } => {
+  if (byteLength === "8-bytes") {
+    if (type === "BE") {
+      const valueWizData = WizData.fromHex(value);
+      console.log(valueWizData);
+
+      //le
+      const le = hexLE(valueWizData.hex);
+      console.log(le);
+
+      //decimal
+      const leWizData = WizData.fromHex(le);
+      const decimal = LE64ToNum(leWizData).number?.toString();
+      console.log(decimal);
+
+      return { be: value, le, decimal: decimal || "" };
+    }
+
+    if (type === "LE") {
+      const valueWizData = WizData.fromHex(value);
+      console.log(valueWizData);
+
+      //be
+      const be = hexLE(valueWizData.hex);
+      console.log(be);
+
+      //decimal
+      const decimal = LE64ToNum(valueWizData).number?.toString();
+      console.log(decimal);
+
+      return { be, le: value, decimal: decimal || "" };
+    }
+
+    if (type === "Decimal") {
+      //decimal
+      const sathoshi = Number(value) * 100000000;
+      console.log(sathoshi.toString());
+
+      const sathoshiWizData = WizData.fromNumber(sathoshi);
+      console.log(sathoshiWizData);
+
+      //le
+      const le = numToLE64(sathoshiWizData);
+      console.log(le.hex);
+
+      //be
+      const beHex = hexLE(le.hex);
+      console.log(beHex);
+
+      return { be: beHex, le: le.hex, decimal: sathoshi.toString() };
+    }
+  }
+
+  if (byteLength === "4-bytes") {
+    if (type === "BE") {
+      const valueWizData = WizData.fromHex(value);
+      console.log(valueWizData);
+
+      //le
+      const le = hexLE(valueWizData.hex);
+      console.log(le);
+
+      //decimal
+      const leWizData = WizData.fromHex(le);
+      const decimal = LE32ToNum(leWizData).number?.toString();
+      console.log(decimal);
+
+      return { be: value, le, decimal: decimal || "" };
+    }
+
+    if (type === "LE") {
+      const valueWizData = WizData.fromHex(value);
+      console.log(valueWizData);
+
+      //be
+      const be = hexLE(valueWizData.hex);
+      console.log(be);
+
+      //decimal
+      const decimal = LE32ToNum(valueWizData).number?.toString();
+      console.log(decimal);
+
+      return { be, le: value, decimal: decimal || "" };
+    }
+
+    if (type === "Decimal") {
+      //decimal
+      const sathoshiWizData = WizData.fromNumber(Number(value));
+      console.log("sathoshiWizData", sathoshiWizData);
+
+      //le
+      const le = numToLE32(sathoshiWizData);
+      console.log("leHex", le.hex);
+
+      //be
+      const beHex = hexLE(le.hex);
+      console.log(beHex);
+
+      return { be: beHex, le: le.hex, decimal: value };
+    }
+  }
+
+  return { decimal: "", le: "", be: "" };
+};
