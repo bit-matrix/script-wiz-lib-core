@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mod = exports.withIn = exports.max = exports.min = exports.graterThanOrEqual = exports.lessThanOrEqual = exports.graterThan = exports.lessThan = exports.numNotEqual = exports.numEqualVerify = exports.numEqual = exports.boolOr = exports.boolAnd = exports.rshift = exports.lshift = exports.div = exports.mul = exports.sub = exports.add = exports.notEqual0 = exports.not = exports.abs = exports.negate = exports.sub1 = exports.add1 = void 0;
+exports.randomRange = exports.mod = exports.withIn = exports.max = exports.min = exports.graterThanOrEqual = exports.lessThanOrEqual = exports.graterThan = exports.lessThan = exports.numNotEqual = exports.numEqualVerify = exports.numEqual = exports.boolOr = exports.boolAnd = exports.rshift = exports.lshift = exports.div = exports.mul = exports.sub = exports.add = exports.notEqual0 = exports.not = exports.abs = exports.negate = exports.sub1 = exports.add1 = void 0;
 var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
 var add1 = function (wizData) {
     if (wizData.number !== undefined) {
@@ -206,4 +206,28 @@ var mod = function (wizData, wizData2) {
     throw "Error: this operation requires 2 valid number wizData";
 };
 exports.mod = mod;
+var randomRange = function (wizData, wizData2, wizData3) {
+    var size = wizData;
+    var minValue = wizData2;
+    var maxValue = wizData3;
+    if (size.number !== undefined && minValue.number !== undefined && maxValue.number !== undefined) {
+        if (minValue === maxValue)
+            return minValue;
+        if (minValue > maxValue)
+            throw "Error: minimum value must be less than max value";
+        var difference = maxValue.number - minValue.number;
+        if (size.number > maxValue.bytes.length || size.number < minValue.bytes.length)
+            throw "Error : invalid data range";
+        var i = 0;
+        while (i < difference) {
+            var randomNumber = wiz_data_1.default.fromNumber(Math.ceil(Math.random() * (maxValue.number - minValue.number) + minValue.number));
+            if (size.number === randomNumber.bytes.length) {
+                return randomNumber;
+            }
+            i++;
+        }
+    }
+    throw "Error: this operation requires 3 valid number wizData";
+};
+exports.randomRange = randomRange;
 //# sourceMappingURL=arithmetics.js.map

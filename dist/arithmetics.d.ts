@@ -24,3 +24,4 @@ export declare const min: (wizData: WizData, wizData2: WizData) => WizData;
 export declare const max: (wizData: WizData, wizData2: WizData) => WizData;
 export declare const withIn: (wizData: WizData, wizData2: WizData, wizData3: WizData) => WizData;
 export declare const mod: (wizData: WizData, wizData2: WizData) => WizData;
+export declare const randomRange: (wizData: WizData, wizData2: WizData, wizData3: WizData) => WizData;
