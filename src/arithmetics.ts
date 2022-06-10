@@ -225,17 +225,29 @@ export const mod = (wizData: WizData, wizData2: WizData): WizData => {
   throw "Error: this operation requires 2 valid number wizData";
 };
 
-export const random = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData => {
-  const currentNumber = wizData.number;
-  const minValue = wizData2.number;
-  const maxValue = wizData3.number;
+export const randomRange = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData => {
+  const size = wizData;
+  const minValue = wizData2;
+  const maxValue = wizData3;
 
-  if (currentNumber !== undefined && minValue !== undefined && maxValue !== undefined) {
-    if (minValue === maxValue) return WizData.fromNumber(minValue);
+  if (size.number !== undefined && minValue.number !== undefined && maxValue.number !== undefined) {
+    if (minValue === maxValue) return minValue;
 
     if (minValue > maxValue) throw "Error: minimum value must be less than max value";
+    const difference = maxValue.number - minValue.number;
 
-    return WizData.fromNumber(Math.ceil(Math.random() * minValue + maxValue));
+    if (size.number > maxValue.bytes.length || size.number < minValue.bytes.length) throw "Error : invalid data range";
+
+    let i = 0;
+    while (i < difference) {
+      const randomNumber = WizData.fromNumber(Math.ceil(Math.random() * (maxValue.number - minValue.number) + minValue.number));
+
+      if (size.number === randomNumber.bytes.length) {
+        return randomNumber;
+      }
+
+      i++;
+    }
   }
 
   throw "Error: this operation requires 3 valid number wizData";
