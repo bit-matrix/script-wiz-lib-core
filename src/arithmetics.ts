@@ -224,3 +224,19 @@ export const mod = (wizData: WizData, wizData2: WizData): WizData => {
 
   throw "Error: this operation requires 2 valid number wizData";
 };
+
+export const random = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData => {
+  const currentNumber = wizData.number;
+  const minValue = wizData2.number;
+  const maxValue = wizData3.number;
+
+  if (currentNumber !== undefined && minValue !== undefined && maxValue !== undefined) {
+    if (minValue === maxValue) return WizData.fromNumber(minValue);
+
+    if (minValue > maxValue) throw "Error: minimum value must be less than max value";
+
+    return WizData.fromNumber(Math.ceil(Math.random() * minValue + maxValue));
+  }
+
+  throw "Error: this operation requires 3 valid number wizData";
+};
