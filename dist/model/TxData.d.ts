@@ -12,6 +12,8 @@ export declare type TxOutput = {
     scriptPubKey: string;
     amount: string;
     assetId?: string;
+    assetCommitment?: string;
+    valueCommitment?: string;
 };
 export declare type TxData = {
     inputs: TxInput[];
