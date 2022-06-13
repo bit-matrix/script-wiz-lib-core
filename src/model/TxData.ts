@@ -13,6 +13,8 @@ export type TxOutput = {
   scriptPubKey: string;
   amount: string;
   assetId?: string;
+  assetCommitment?: string;
+  valueCommitment?: string;
 };
 
 export type TxData = {
