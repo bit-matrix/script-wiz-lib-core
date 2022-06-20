@@ -1,10 +1,29 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LE32ToNum = exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64 = exports.convert64 = void 0;
-var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
+exports.LE32ToNum = exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64LE = exports.numToLE64 = exports.convert64 = void 0;
+var wiz_data_1 = __importStar(require("@script-wiz/wiz-data"));
 var bn_js_1 = __importDefault(require("bn.js"));
 var convert64 = function (wizData) {
     var isNegate = wizData.bin.charAt(0) === "1";
@@ -30,6 +49,12 @@ var numToLE64 = function (wizData) {
     return (0, exports.convert64)(wizData);
 };
 exports.numToLE64 = numToLE64;
+var numToLE64LE = function (wizData) {
+    var inputHex = (0, exports.numToLE64)(wizData).hex;
+    var inputHexLe = (0, wiz_data_1.hexLE)(inputHex);
+    return wiz_data_1.default.fromHex(inputHexLe);
+};
+exports.numToLE64LE = numToLE64LE;
 var numToLE32 = function (wizData) {
     var inputByteLength = wizData.bytes.length;
     if (inputByteLength > 4)
