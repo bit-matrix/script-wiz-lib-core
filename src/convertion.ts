@@ -1,4 +1,4 @@
-import WizData from "@script-wiz/wiz-data";
+import WizData, { hexLE } from "@script-wiz/wiz-data";
 import BN from "bn.js";
 
 export const convert64 = (wizData: WizData): WizData => {
@@ -29,6 +29,13 @@ export const numToLE64 = (wizData: WizData): WizData => {
   if (inputByteLength > 8) throw "Input byte length must be maximum 8 byte";
 
   return convert64(wizData);
+};
+
+export const numToLE64LE = (wizData: WizData): WizData => {
+  const inputHex = numToLE64(wizData).hex;
+  const inputHexLe = hexLE(inputHex);
+
+  return WizData.fromHex(inputHexLe);
 };
 
 export const numToLE32 = (wizData: WizData): WizData => {
