@@ -7,6 +7,7 @@ export type TxInput = {
   assetId?: string;
   blockHeight?: string;
   blockTimestamp?: string;
+  confidental: boolean;
 };
 
 export type TxOutput = {
@@ -15,6 +16,7 @@ export type TxOutput = {
   assetId?: string;
   assetCommitment?: string;
   valueCommitment?: string;
+  confidental: boolean;
 };
 
 export type TxData = {
