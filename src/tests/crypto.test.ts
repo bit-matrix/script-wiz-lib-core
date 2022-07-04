@@ -1,17 +1,6 @@
 // import { numberTestData } from "./data/number";
 import WizData from "@script-wiz/wiz-data";
-import {
-  ecdsaVerify,
-  hash160,
-  hash256,
-  secp256k1KeyGenerator,
-  secp256k1CreatePublicKey,
-  schnorrKeyGenerator,
-  schnorrCreatePublicKey,
-  secp256k1Sign,
-  schnorrSign,
-  checkMultiSig,
-} from "../crypto";
+import { ecdsaVerify, hash160, hash256, secp256k1KeyGenerator, secp256k1CreatePublicKey, schnorrKeyGenerator, schnorrCreatePublicKey, secp256k1Sign, schnorrSign } from "../crypto";
 import { TxData } from "../model";
 
 // test("Crypto ripemd160 test", () => {
@@ -118,38 +107,38 @@ import { TxData } from "../model";
 //   console.log(secp256k1CreatePublicKey(privateKey));
 // });
 
-test("checkMultiSig", () => {
-  const data: TxData = {
-    inputs: [
-      {
-        previousTxId: "0930a48bd0b7ac94822b838b733ad0e9691bce1c6046fbd62e150788fce297f9",
-        vout: "3",
-        sequence: "ffffffff",
-        scriptPubKey:
-          "52210375e00eb72e29da82b89367947f29ef34afb75e8654f6ea368e0acdfd92976b7c2103a1b26313f430c4b15bb1fdce663207659d8cac749a0e53d70eff01874496feff2103c96d495bfdd5ba4145e3e046fee45e84a8a48ad05bd8dbb395c011a32cf9f88053ae",
-        amount: "0.01662577",
-      },
-    ],
-    outputs: [
-      { scriptPubKey: "a914789b9183bc04977e34aaf9d22d41c6ff8867fc4087", amount: "0.013" },
-      { scriptPubKey: "0020701a8d401c84fb13e6baf169d59684e17abd9fa216c8cc5b9fc63d622ff8c58d", amount: "0.00302577" },
-    ],
-    version: "1",
-    timelock: "0",
-    currentInputIndex: 0,
-  };
+// test("checkMultiSig", () => {
+//   const data: TxData = {
+//     inputs: [
+//       {
+//         previousTxId: "0930a48bd0b7ac94822b838b733ad0e9691bce1c6046fbd62e150788fce297f9",
+//         vout: "3",
+//         sequence: "ffffffff",
+//         scriptPubKey:
+//           "52210375e00eb72e29da82b89367947f29ef34afb75e8654f6ea368e0acdfd92976b7c2103a1b26313f430c4b15bb1fdce663207659d8cac749a0e53d70eff01874496feff2103c96d495bfdd5ba4145e3e046fee45e84a8a48ad05bd8dbb395c011a32cf9f88053ae",
+//         amount: "0.01662577",
+//       },
+//     ],
+//     outputs: [
+//       { scriptPubKey: "a914789b9183bc04977e34aaf9d22d41c6ff8867fc4087", amount: "0.013" },
+//       { scriptPubKey: "0020701a8d401c84fb13e6baf169d59684e17abd9fa216c8cc5b9fc63d622ff8c58d", amount: "0.00302577" },
+//     ],
+//     version: "1",
+//     timelock: "0",
+//     currentInputIndex: 0,
+//   };
 
-  const publicKeyList: WizData[] = [
-    WizData.fromHex("0375e00eb72e29da82b89367947f29ef34afb75e8654f6ea368e0acdfd92976b7c"),
-    WizData.fromHex("03a1b26313f430c4b15bb1fdce663207659d8cac749a0e53d70eff01874496feff"),
-    WizData.fromHex("03c96d495bfdd5ba4145e3e046fee45e84a8a48ad05bd8dbb395c011a32cf9f880"),
-  ];
+//   const publicKeyList: WizData[] = [
+//     WizData.fromHex("0375e00eb72e29da82b89367947f29ef34afb75e8654f6ea368e0acdfd92976b7c"),
+//     WizData.fromHex("03a1b26313f430c4b15bb1fdce663207659d8cac749a0e53d70eff01874496feff"),
+//     WizData.fromHex("03c96d495bfdd5ba4145e3e046fee45e84a8a48ad05bd8dbb395c011a32cf9f880"),
+//   ];
 
-  const signatureList: WizData[] = [
-    WizData.fromHex("304402202298e0668fb29c3b2d8e18592e1fc22b7d452fe79783421b742f43d4dbdb600402201b770e603ef2776608b935e82c1da973bd008107cb16806d99725929b9e7b406"),
-    WizData.fromHex("30440220428802fe653c7b864a24515932a4ea61842da59110a86c7771f28d3af3f230ec02200a199b60f9f3877d97c9898746775a2b3138627c9b3226a79bef3dfd720606d6"),
-  ];
+//   const signatureList: WizData[] = [
+//     WizData.fromHex("304402202298e0668fb29c3b2d8e18592e1fc22b7d452fe79783421b742f43d4dbdb600402201b770e603ef2776608b935e82c1da973bd008107cb16806d99725929b9e7b406"),
+//     WizData.fromHex("30440220428802fe653c7b864a24515932a4ea61842da59110a86c7771f28d3af3f230ec02200a199b60f9f3877d97c9898746775a2b3138627c9b3226a79bef3dfd720606d6"),
+//   ];
 
-  const checkMultiSigValue = checkMultiSig(publicKeyList, signatureList, data);
-  console.log(checkMultiSigValue);
-});
+//   const checkMultiSigValue = checkMultiSig(publicKeyList, signatureList, data);
+//   console.log(checkMultiSigValue);
+// });

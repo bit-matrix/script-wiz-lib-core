@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.inputConverter = exports.LE32ToNum = exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64 = exports.convert64 = void 0;
+exports.inputConverter = exports.LE32ToNum = exports.LE32toLE64 = exports.LE64ToNum = exports.convert32 = exports.numToLE32 = exports.numToLE64LE = exports.numToLE64 = exports.convert64 = void 0;
 var wiz_data_1 = __importStar(require("@script-wiz/wiz-data"));
 var bn_js_1 = __importDefault(require("bn.js"));
 var convert64 = function (wizData) {
@@ -53,6 +53,12 @@ var numToLE64 = function (wizData) {
     return (0, exports.convert64)(wizData);
 };
 exports.numToLE64 = numToLE64;
+var numToLE64LE = function (wizData) {
+    var inputHex = (0, exports.numToLE64)(wizData).hex;
+    var inputHexLe = (0, wiz_data_1.hexLE)(inputHex);
+    return wiz_data_1.default.fromHex(inputHexLe);
+};
+exports.numToLE64LE = numToLE64LE;
 var numToLE32 = function (wizData) {
     var inputByteLength = wizData.bytes.length;
     if (inputByteLength > 4)

@@ -31,6 +31,13 @@ export const numToLE64 = (wizData: WizData): WizData => {
   return convert64(wizData);
 };
 
+export const numToLE64LE = (wizData: WizData): WizData => {
+  const inputHex = numToLE64(wizData).hex;
+  const inputHexLe = hexLE(inputHex);
+
+  return WizData.fromHex(inputHexLe);
+};
+
 export const numToLE32 = (wizData: WizData): WizData => {
   const inputByteLength = wizData.bytes.length;
 
