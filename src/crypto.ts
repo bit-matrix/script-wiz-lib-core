@@ -29,6 +29,16 @@ export const hash160 = (wizData: WizData): CryptoJS.lib.WordArray => {
   return dataWithRipemd160Hashed;
 };
 
+export const sha256v2 = (wizData: WizData): string => {
+  return CryptoJS.SHA256(CryptoJS.enc.Hex.parse(wizData.hex)).toString();
+};
+
+export const hash160v2 = (wizData: WizData): string => {
+  const dataWithSha256Hashed = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(wizData.hex));
+  const dataWithRipemd160Hashed = CryptoJS.RIPEMD160(dataWithSha256Hashed);
+  return dataWithRipemd160Hashed.toString();
+};
+
 export const hash256 = (wizData: WizData): CryptoJS.lib.WordArray => {
   const firstSHAHash = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(wizData.hex));
   const secondSHAHash = CryptoJS.SHA256(firstSHAHash);
