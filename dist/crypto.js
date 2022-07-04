@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.shnorrSigVerify = exports.ecdsaVerify = exports.schnorrCreatePublicKey = exports.secp256k1CreatePublicKey = exports.secp256k1Verify = exports.schnorrSign = exports.secp256k1Sign = exports.schnorrKeyGenerator = exports.secp256k1KeyGenerator = exports.hash256 = exports.hash160 = exports.sha256 = exports.sha1 = exports.ripemd160 = void 0;
+exports.shnorrSigVerify = exports.ecdsaVerify = exports.schnorrCreatePublicKey = exports.secp256k1CreatePublicKey = exports.secp256k1Verify = exports.schnorrSign = exports.secp256k1Sign = exports.schnorrKeyGenerator = exports.secp256k1KeyGenerator = exports.hash256 = exports.hash160v2 = exports.sha256v2 = exports.hash160 = exports.sha256 = exports.sha1 = exports.ripemd160 = void 0;
 var crypto_js_1 = __importDefault(require("crypto-js"));
 var elliptic_1 = __importDefault(require("elliptic"));
 var bn_js_1 = __importDefault(require("bn.js"));
@@ -28,6 +28,16 @@ var hash160 = function (wizData) {
     return dataWithRipemd160Hashed;
 };
 exports.hash160 = hash160;
+var sha256v2 = function (wizData) {
+    return crypto_js_1.default.SHA256(crypto_js_1.default.enc.Hex.parse(wizData.hex)).toString();
+};
+exports.sha256v2 = sha256v2;
+var hash160v2 = function (wizData) {
+    var dataWithSha256Hashed = crypto_js_1.default.SHA256(crypto_js_1.default.enc.Hex.parse(wizData.hex));
+    var dataWithRipemd160Hashed = crypto_js_1.default.RIPEMD160(dataWithSha256Hashed);
+    return dataWithRipemd160Hashed.toString();
+};
+exports.hash160v2 = hash160v2;
 var hash256 = function (wizData) {
     var firstSHAHash = crypto_js_1.default.SHA256(crypto_js_1.default.enc.Hex.parse(wizData.hex));
     var secondSHAHash = crypto_js_1.default.SHA256(firstSHAHash);

@@ -7,6 +7,7 @@ export declare type TxInput = {
     assetId?: string;
     blockHeight?: string;
     blockTimestamp?: string;
+    confidental: boolean;
 };
 export declare type TxOutput = {
     scriptPubKey: string;
@@ -14,6 +15,7 @@ export declare type TxOutput = {
     assetId?: string;
     assetCommitment?: string;
     valueCommitment?: string;
+    confidental: boolean;
 };
 export declare type TxData = {
     inputs: TxInput[];
