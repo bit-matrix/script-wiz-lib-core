@@ -1,6 +1,8 @@
 import WizData from "@script-wiz/wiz-data";
 import BN from "bn.js";
 import { convert64 } from "../convertion";
+import varuint from "varuint-bitcoin";
+import { ripemd160, sha256v2 } from "../crypto";
 
 export const ZERO_64 = new BN(convert64(WizData.fromHex("00")).bin, 2);
 export const MAX_INTEGER_64 = new BN("0111111111111111111111111111111111111111111111111111111111111111", 2);
@@ -35,4 +37,17 @@ export const calculateTwoPow = (value: number) => {
   }
 
   return valueBinArray.length;
+};
+
+export const compactSizeVarInt = (hex: string) => {
+  const hexByteSize = hex.length / 2;
+
+  return varuint.encode(hexByteSize).toString("hex");
+};
+
+export const publicKeyToScriptPubkey = (publickey: string) => {
+  const pubKeyHash = sha256v2(WizData.fromHex(publickey));
+  const scriptPubkey = ripemd160(WizData.fromHex(pubKeyHash)).toString();
+
+  return scriptPubkey;
 };

@@ -11,5 +11,24 @@ import * as stacks from "./stacks";
 import * as sha256d from "./sha256d";
 import * as taproot from "./taproot";
 import { TxData, TxInput, TxOutput, TAPROOT_VERSION } from "./model";
+import * as utils from "./utils";
 
-export { address, arithmetics, bitwise, convertion, arithmetics64, crypto, introspection, locktime, splices, stacks, taproot, sha256d, TxData, TxInput, TxOutput, TAPROOT_VERSION };
+export {
+  address,
+  arithmetics,
+  bitwise,
+  convertion,
+  arithmetics64,
+  crypto,
+  introspection,
+  locktime,
+  splices,
+  stacks,
+  taproot,
+  sha256d,
+  utils,
+  TxData,
+  TxInput,
+  TxOutput,
+  TAPROOT_VERSION,
+};
