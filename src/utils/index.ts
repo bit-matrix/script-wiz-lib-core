@@ -45,6 +45,12 @@ export const compactSizeVarInt = (hex: string) => {
   return varuint.encode(hexByteSize).toString("hex");
 };
 
+export const compactSizeVarIntData = (hex: string) => {
+  const hexByteSize = hex.length / 2;
+
+  return varuint.encode(hexByteSize).toString("hex") + hex;
+};
+
 export const publicKeyToScriptPubkey = (publickey: string) => {
   const pubKeyHash = sha256v2(WizData.fromHex(publickey));
   const scriptPubkey = ripemd160(WizData.fromHex(pubKeyHash)).toString();
