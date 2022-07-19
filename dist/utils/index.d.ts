@@ -8,4 +8,5 @@ export declare const toHexString: (byteArray: Uint8Array) => string;
 export declare const signdecimalToBinary: (decimalValue: number) => string;
 export declare const calculateTwoPow: (value: number) => number;
 export declare const compactSizeVarInt: (hex: string) => string;
+export declare const compactSizeVarIntData: (hex: string) => string;
 export declare const publicKeyToScriptPubkey: (publickey: string) => string;
