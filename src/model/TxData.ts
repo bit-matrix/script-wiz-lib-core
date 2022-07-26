@@ -4,15 +4,21 @@ export type TxInput = {
   sequence: string;
   scriptPubKey: string;
   amount: string;
+};
+
+export type TxInputLiquid = TxInput & {
   assetId?: string;
-  blockHeight?: string;
-  blockTimestamp?: string;
+  assetCommitment?: string;
+  valueCommitment?: string;
   confidental: boolean;
 };
 
 export type TxOutput = {
   scriptPubKey: string;
   amount: string;
+};
+
+export type TxOutputLiquid = TxOutput & {
   assetId?: string;
   assetCommitment?: string;
   valueCommitment?: string;
@@ -20,9 +26,11 @@ export type TxOutput = {
 };
 
 export type TxData = {
-  inputs: TxInput[];
-  outputs: TxOutput[];
+  inputs: TxInput[] | TxInputLiquid[];
+  outputs: TxOutput[] | TxOutputLiquid[];
   version: string;
   timelock: string;
   currentInputIndex: number;
+  blockHeight: string;
+  blockTimestamp: string;
 };
