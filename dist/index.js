@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TAPROOT_VERSION = exports.utils = exports.sha256d = exports.taproot = exports.stacks = exports.splices = exports.locktime = exports.introspection = exports.crypto = exports.arithmetics64 = exports.convertion = exports.bitwise = exports.arithmetics = exports.address = void 0;
+exports.utils = exports.TAPROOT_VERSION = exports.sha256d = exports.taproot = exports.stacks = exports.splices = exports.locktime = exports.introspection = exports.crypto = exports.arithmetics64 = exports.convertion = exports.bitwise = exports.arithmetics = exports.address = void 0;
 var address = __importStar(require("./addresses"));
 exports.address = address;
 var arithmetics = __importStar(require("./arithmetics"));
