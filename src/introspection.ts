@@ -1,5 +1,5 @@
 import WizData, { hexLE } from "@script-wiz/wiz-data";
-import { TxInput, TxOutput } from "./model/TxData";
+import { TxInput, TxInputLiquid, TxOutput, TxOutputLiquid } from "./model/TxData";
 import * as crypto from "./crypto";
 import { numToLE32, numToLE64 } from "./convertion";
 import Decimal from "decimal.js";
@@ -31,7 +31,7 @@ export const inspectInputOutPoint = (wizData: WizData, txInputs: TxInput[]): Wiz
   return [WizData.fromHex(inputPreviousTxIdLE), WizData.fromHex(currentInputVout), WizData.fromHex("00")];
 };
 
-export const inspectInputAsset = (wizData: WizData, txInputs: TxInput[]): WizData[] => {
+export const inspectInputAsset = (wizData: WizData, txInputs: TxInputLiquid[]): WizData[] => {
   let currentTxInputIndex = wizData.number;
   if (wizData.hex === "00") {
     currentTxInputIndex = 0;
@@ -162,7 +162,7 @@ export const inspectInputSequence = (wizData: WizData, txInputs: TxInput[]): Wiz
   return WizData.fromHex(currentInputSequence);
 };
 
-export const inspectOutputAsset = (wizData: WizData, txOutputs: TxOutput[]): WizData[] => {
+export const inspectOutputAsset = (wizData: WizData, txOutputs: TxOutputLiquid[]): WizData[] => {
   let currentTxOutputIndex = wizData.number;
   if (wizData.hex === "00") {
     currentTxOutputIndex = 0;
