@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "npx webpack --mode production --config webpack.config.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.7",
@@ -17,7 +17,10 @@
     "@types/jest": "^26.0.23",
     "@types/secp256k1": "^4.0.3",
     "jest": "^26.6.3",
-    "typescript": "^4.2.3"
+    "native-ext-loader": "^2.3.0",
+    "node-loader": "^2.0.0",
+    "typescript": "^4.2.3",
+    "webpack-cli": "^4.10.0"
   },
   "repository": {
     "type": "git",
@@ -32,12 +35,16 @@
   "dependencies": {
     "@bitmatrix/sha256streaming": "^1.0.5",
     "@script-wiz/wiz-data": "^1.0.3",
+    "babel-loader": "^8.2.5",
     "bcrypto": "^5.4.0",
     "bech32": "^2.0.0",
     "bn.js": "^5.2.0",
     "crypto-js": "^4.1.1",
     "decimal.js": "^10.3.1",
     "elliptic": "^6.5.4",
-    "varuint-bitcoin": "^1.1.2"
+    "node-polyfill-webpack-plugin": "^2.0.1",
+    "ts-loader": "^9.3.1",
+    "varuint-bitcoin": "^1.1.2",
+    "webpack": "^5.74.0"
   }
 }
