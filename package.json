@@ -1,6 +1,6 @@
 {
   "name": "@script-wiz/lib-core",
-  "version": "0.0.56",
+  "version": "0.0.57",
   "description": "script wiz lib core",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/bit-matrix/script-wiz-lib-core#readme",
   "dependencies": {
-    "@bitmatrix/sha256streaming": "^1.0.25",
+    "@bitmatrix/sha256streaming": "^1.0.26",
     "@script-wiz/wiz-data": "^1.0.3",
     "bcrypto": "^5.4.0",
     "bech32": "^2.0.0",
