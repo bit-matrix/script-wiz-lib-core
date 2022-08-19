@@ -8,6 +8,7 @@ import * as introspection from "./introspection";
 import * as locktime from "./locktime";
 import * as splices from "./splices";
 import * as stacks from "./stacks";
+import * as streaming from "./streaming";
 import * as sha256d from "./sha256d";
 import * as taproot from "./taproot";
 import { TxData, TxInput, TxInputLiquid, TxOutput, TxOutputLiquid, TAPROOT_VERSION } from "./model";
@@ -24,13 +25,14 @@ export {
   locktime,
   splices,
   stacks,
-  taproot,
+  streaming,
   sha256d,
+  taproot,
+  utils,
   TxData,
   TxInput,
   TxInputLiquid,
   TxOutput,
   TxOutputLiquid,
   TAPROOT_VERSION,
-  utils,
 };
