@@ -62,6 +62,7 @@ export const inspectInputValue = (wizData: WizData, txInputs: TxInput[]): WizDat
   if (wizData.hex === "00") {
     currentTxInputIndex = 0;
   }
+
   const txInputLength = txInputs.length;
 
   if (currentTxInputIndex === undefined) throw "Invalid transaction input index!";
@@ -71,6 +72,8 @@ export const inspectInputValue = (wizData: WizData, txInputs: TxInput[]): WizDat
   if (txInputLength === 0) throw "Transaction input template must include at least an element.";
 
   if (txInputLength < currentTxInputIndex + 1) throw "Input index must less than transaction inputs length!";
+
+  if (!txInputs[currentTxInputIndex].amount) throw "Input template amount field must include data!";
 
   const mul = new Decimal(txInputs[currentTxInputIndex].amount).mul(new Decimal(100000000));
 
@@ -191,6 +194,7 @@ export const inspectOutputValue = (wizData: WizData, txOutputs: TxOutput[]): Wiz
   if (wizData.hex === "00") {
     currentTxOutputIndex = 0;
   }
+
   const txOutputLength = txOutputs.length;
 
   if (currentTxOutputIndex === undefined) throw "Invalid transaction output index!";
@@ -200,6 +204,8 @@ export const inspectOutputValue = (wizData: WizData, txOutputs: TxOutput[]): Wiz
   if (txOutputLength === 0) throw "Transaction output template must include at least an element.";
 
   if (txOutputLength < currentTxOutputIndex + 1) throw "Output index must less than transaction outputs length!";
+
+  if (!txOutputs[currentTxOutputIndex].amount) throw "Input template amount field must include data!";
 
   const mul = new Decimal(txOutputs[currentTxOutputIndex].amount).mul(new Decimal(100000000));
 
