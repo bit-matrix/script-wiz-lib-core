@@ -91,6 +91,8 @@ var inspectInputValue = function (wizData, txInputs) {
         throw "Transaction input template must include at least an element.";
     if (txInputLength < currentTxInputIndex + 1)
         throw "Input index must less than transaction inputs length!";
+    if (!txInputs[currentTxInputIndex].amount)
+        throw "Input template amount field must include data!";
     var mul = new decimal_js_1.default(txInputs[currentTxInputIndex].amount).mul(new decimal_js_1.default(100000000));
     var currentInputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(mul.toNumber())).hex;
     if (!currentInputAmount)
@@ -211,6 +213,8 @@ var inspectOutputValue = function (wizData, txOutputs) {
         throw "Transaction output template must include at least an element.";
     if (txOutputLength < currentTxOutputIndex + 1)
         throw "Output index must less than transaction outputs length!";
+    if (!txOutputs[currentTxOutputIndex].amount)
+        throw "Input template amount field must include data!";
     var mul = new decimal_js_1.default(txOutputs[currentTxOutputIndex].amount).mul(new decimal_js_1.default(100000000));
     var currentOutputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(mul.toNumber())).hex;
     if (!currentOutputAmount)
