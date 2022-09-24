@@ -106,9 +106,9 @@ var tweakVerify = function (wizData, wizData2, wizData3) {
     var vchTweak = wizData2;
     var vchTweakedKey = wizData;
     if (vchTweak.bytes.length != 32)
-        throw "Tweak key length must be eqaul 32 byte";
+        throw "Tweak key length must be equal 32 byte";
     if (internalKey.bytes.length != 32)
-        throw "Internal key length must be eqaul 32 byte";
+        throw "Internal key length must be equal 32 byte";
     if (vchTweakedKey.bytes[0] !== 2 && vchTweakedKey.bytes[0] !== 3)
         throw "Tweaked key must start with 0x02 or 0x03";
     var isChecked = (0, taproot_1.publicKeyTweakCheckWithPrefix)(internalKey, vchTweak, vchTweakedKey);
