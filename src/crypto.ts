@@ -119,9 +119,9 @@ export const tweakVerify = (wizData: WizData, wizData2: WizData, wizData3: WizDa
   const vchTweak = wizData2;
   const vchTweakedKey = wizData;
 
-  if (vchTweak.bytes.length != 32) throw "Tweak key length must be eqaul 32 byte";
+  if (vchTweak.bytes.length != 32) throw "Tweak key length must be equal 32 byte";
 
-  if (internalKey.bytes.length != 32) throw "Internal key length must be eqaul 32 byte";
+  if (internalKey.bytes.length != 32) throw "Internal key length must be equal 32 byte";
 
   if (vchTweakedKey.bytes[0] !== 2 && vchTweakedKey.bytes[0] !== 3) throw "Tweaked key must start with 0x02 or 0x03";
 

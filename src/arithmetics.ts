@@ -85,7 +85,7 @@ export const mul = (wizData: WizData, wizData2: WizData): WizData => {
 
 export const div = (wizData: WizData, wizData2: WizData): WizData => {
   if (wizData.number !== undefined && wizData2.number !== undefined) {
-    if (wizData2.number === 0) throw "Error: dividing can't be eqaul 0.";
+    if (wizData2.number === 0) throw "Error: dividing can't be equal 0.";
 
     let divValue: number = wizData.number / wizData2.number;
 
