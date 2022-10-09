@@ -96,6 +96,19 @@ export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: Tx
   return ecdsaVerify(wizData, hashedMessage, wizData2);
 };
 
+export const checkSigAdd = (wizData: WizData, wizData2: WizData, wizData3: WizData, txTemplateData: TxData, version: VM, script: string): WizData => {
+  // stackData 1 = signature
+  // stackData 2 = check sig result 0 or 1
+  // stackData 3 = pubkey
+  if (wizData2.number === undefined) throw "Checksigadd Verify error : checksig result must be number";
+
+  const result = checkSig(wizData, wizData3, txTemplateData, version, script);
+
+  if (result.number === undefined) throw "Checksigadd Verify error : checksig result must be number";
+
+  return WizData.fromNumber(result.number + wizData2.number);
+};
+
 export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM, script: string): WizData => {
   const message = version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network);
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
