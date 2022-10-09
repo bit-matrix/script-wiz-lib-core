@@ -75,11 +75,11 @@ var ecdsaVerify = function (sig, msg, pubkey) {
     }
 };
 exports.ecdsaVerify = ecdsaVerify;
-var checkSig = function (wizData, wizData2, txTemplateData, version) {
+var checkSig = function (wizData, wizData2, txTemplateData, version, script) {
     // stackData 1 = signature
     // stackData 2 = pubkey
-    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData);
-    if (version === model_1.VM_NETWORK_VERSION.TAPSCRIPT) {
+    var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network);
+    if (version.ver === model_1.VM_NETWORK_VERSION.TAPSCRIPT) {
         var tagHashResult = wiz_data_1.default.fromHex(_1.taproot.tagHash("TapSighash", wiz_data_1.default.fromHex(message)));
         return (0, exports.shnorrSigVerify)(wizData, tagHashResult, wizData2);
     }
@@ -87,8 +87,8 @@ var checkSig = function (wizData, wizData2, txTemplateData, version) {
     return (0, exports.ecdsaVerify)(wizData, hashedMessage, wizData2);
 };
 exports.checkSig = checkSig;
-var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version) {
-    var message = version === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData);
+var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version, script) {
+    var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network);
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
     var signResults = [];
     signatureList.forEach(function (signature) {
