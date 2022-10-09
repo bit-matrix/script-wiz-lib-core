@@ -6,7 +6,7 @@ import bcrypto from "bcrypto";
 import { publicKeyTweakCheckWithPrefix } from "./taproot";
 import { TxData } from "./model";
 import { segwitSerialization, taprootSerialization } from "./serialization";
-import { VM_NETWORK_VERSION } from "./taproot/model";
+import { VM, VM_NETWORK_VERSION } from "./taproot/model";
 import { taproot } from ".";
 
 // TO DO @afarukcali review
@@ -80,13 +80,13 @@ export const ecdsaVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizDat
   }
 };
 
-export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData, version: VM_NETWORK_VERSION): WizData => {
+export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData, version: VM, script: string): WizData => {
   // stackData 1 = signature
   // stackData 2 = pubkey
 
-  const message = version === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData);
+  const message = version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network);
 
-  if (version === VM_NETWORK_VERSION.TAPSCRIPT) {
+  if (version.ver === VM_NETWORK_VERSION.TAPSCRIPT) {
     const tagHashResult = WizData.fromHex(taproot.tagHash("TapSighash", WizData.fromHex(message)));
 
     return shnorrSigVerify(wizData, tagHashResult, wizData2);
@@ -96,8 +96,8 @@ export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: Tx
   return ecdsaVerify(wizData, hashedMessage, wizData2);
 };
 
-export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM_NETWORK_VERSION): WizData => {
-  const message = version === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData);
+export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM, script: string): WizData => {
+  const message = version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network);
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
   let signResults: WizData[] = [];
