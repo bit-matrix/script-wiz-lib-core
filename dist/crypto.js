@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.schnorrCreatePublicKey = exports.secp256k1CreatePublicKey = exports.secp256k1Verify = exports.schnorrSign = exports.secp256k1Sign = exports.schnorrKeyGenerator = exports.secp256k1KeyGenerator = exports.shnorrSigVerify = exports.tweakVerify = exports.checkMultiSig = exports.checkSig = exports.ecdsaVerify = exports.hash256 = exports.hash160v2 = exports.sha256v2 = exports.hash160 = exports.sha256 = exports.sha1 = exports.ripemd160 = void 0;
+exports.schnorrCreatePublicKey = exports.secp256k1CreatePublicKey = exports.secp256k1Verify = exports.schnorrSign = exports.secp256k1Sign = exports.schnorrKeyGenerator = exports.secp256k1KeyGenerator = exports.shnorrSigVerify = exports.tweakVerify = exports.checkMultiSig = exports.checkSigAdd = exports.checkSig = exports.ecdsaVerify = exports.hash256 = exports.hash160v2 = exports.sha256v2 = exports.hash160 = exports.sha256 = exports.sha1 = exports.ripemd160 = void 0;
 var crypto_js_1 = __importDefault(require("crypto-js"));
 var elliptic_1 = __importDefault(require("elliptic"));
 var bn_js_1 = __importDefault(require("bn.js"));
@@ -87,6 +87,18 @@ var checkSig = function (wizData, wizData2, txTemplateData, version, script) {
     return (0, exports.ecdsaVerify)(wizData, hashedMessage, wizData2);
 };
 exports.checkSig = checkSig;
+var checkSigAdd = function (wizData, wizData2, wizData3, txTemplateData, version, script) {
+    // stackData 1 = signature
+    // stackData 2 = check sig result 0 or 1
+    // stackData 3 = pubkey
+    if (wizData2.number === undefined)
+        throw "Checksigadd Verify error : checksig result must be number";
+    var result = (0, exports.checkSig)(wizData, wizData3, txTemplateData, version, script);
+    if (result.number === undefined)
+        throw "Checksigadd Verify error : checksig result must be number";
+    return wiz_data_1.default.fromNumber(result.number + wizData2.number);
+};
+exports.checkSigAdd = checkSigAdd;
 var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version, script) {
     var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network);
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());

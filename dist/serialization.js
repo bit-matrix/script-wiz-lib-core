@@ -102,7 +102,6 @@ var calculatePrevouts = function (inputs, isSegwit) {
         var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(input.vout))).hex;
         hashInputs += wiz_data_1.default.fromHex((0, wiz_data_1.hexLE)(input.previousTxId) + vout).hex;
     });
-    console.log("hashInputs", hashInputs);
     return isSegwit ? (0, crypto_1.hash256)(wiz_data_1.default.fromHex(hashInputs)).toString() : (0, crypto_1.sha256)(wiz_data_1.default.fromHex(hashInputs)).toString();
 };
 var calculateInputAmounts = function (inputs) {
@@ -138,24 +137,16 @@ var taprootSerialization = function (data, script, network) {
     if (data.version === "")
         throw "Version must not be empty in transaction template";
     var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
-    console.log("version", version);
     if (data.timelock === "")
         throw "Timelock must not be empty in transaction template";
     var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
-    console.log("timelock", timelock);
     var hashPrevouts = calculatePrevouts(data.inputs, false);
-    console.log("hashPrevouts", hashPrevouts);
     var inputAmountsSha = calculateInputAmounts(data.inputs);
-    console.log("inputAmountsSha", inputAmountsSha);
     var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
-    console.log("inputPubkeySha", inputPubkeySha);
     var inputSequencesSha = calculateInputSequences(data.inputs);
-    console.log("inputSequencesSha", inputSequencesSha);
     var outputs = calculateHashOutputs(data.outputs, false);
-    console.log("outputs", outputs);
     var spendType = "02";
     var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
-    console.log("currentIndex", currentIndex);
     var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
     return (concat + sighashType + version + timelock + hashPrevouts + inputAmountsSha + inputPubkeySha + inputSequencesSha + outputs + spendType + currentIndex + tapleaf + "00ffffffff");
 };
