@@ -6,7 +6,7 @@ import bcrypto from "bcrypto";
 import { publicKeyTweakCheckWithPrefix } from "./taproot";
 import { TxData } from "./model";
 import { segwitSerialization, taprootSerialization } from "./serialization";
-import { VM_NETWORK_VERSION } from "./taproot/model";
+import { VM, VM_NETWORK_VERSION } from "./taproot/model";
 import { taproot } from ".";
 
 // TO DO @afarukcali review
@@ -46,22 +46,118 @@ export const hash256 = (wizData: WizData): CryptoJS.lib.WordArray => {
   return secondSHAHash;
 };
 
+export const ecdsaVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizData => {
+  const secp256k1 = new elliptic.ec("secp256k1");
+  const hashedMessage = sha256(msg).toString();
+  const publicKey = pubkey.hex;
+  const signature = sig.hex;
+
+  if (publicKey.length !== 66) throw "ECDSA Verify error : invalid public key length";
+
+  if (!signature.startsWith("30")) throw "ECDSA Verify error : signature must start with 0x30";
+
+  const rAndSDataSize = Number("0x" + signature.substr(2, 2));
+
+  const signatureStringLength = rAndSDataSize * 2 + 4;
+
+  if (signature.length !== signatureStringLength) throw "ECDSA Verify error : signature length invalid";
+
+  const rDataSize = Number("0x" + signature.substr(6, 2));
+
+  const rValue = signature.substr(8, rDataSize * 2);
+
+  const sDataSize = Number("0x" + signature.substr(10 + rDataSize * 2, 2));
+
+  const sValue = signature.substr(10 + rDataSize * 2 + 2, sDataSize * 2);
+
+  const rBn = new BN(rValue, "hex");
+  const sBn = new BN(sValue, "hex");
+
+  try {
+    return WizData.fromNumber(secp256k1.verify(hashedMessage, { r: rBn, s: sBn }, secp256k1.keyFromPublic(publicKey, "hex")) ? 1 : 0);
+  } catch {
+    throw "ECDSA Verify error : something went wrong";
+  }
+};
+
+export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData, version: VM, script: string): WizData => {
+  // stackData 1 = signature
+  // stackData 2 = pubkey
+
+  const message = version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network);
+
+  if (version.ver === VM_NETWORK_VERSION.TAPSCRIPT) {
+    const tagHashResult = WizData.fromHex(taproot.tagHash("TapSighash", WizData.fromHex(message)));
+
+    return shnorrSigVerify(wizData, tagHashResult, wizData2);
+  }
+  const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
+
+  return ecdsaVerify(wizData, hashedMessage, wizData2);
+};
+
+export const checkSigAdd = (wizData: WizData, wizData2: WizData, wizData3: WizData, txTemplateData: TxData, version: VM, script: string): WizData => {
+  // stackData 1 = signature
+  // stackData 2 = check sig result 0 or 1
+  // stackData 3 = pubkey
+  if (wizData2.number === undefined) throw "Checksigadd Verify error : checksig result must be number";
+
+  const result = checkSig(wizData, wizData3, txTemplateData, version, script);
+
+  if (result.number === undefined) throw "Checksigadd Verify error : checksig result must be number";
+
+  return WizData.fromNumber(result.number + wizData2.number);
+};
+
+export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM, script: string): WizData => {
+  const message = version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network);
+  const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
+
+  let signResults: WizData[] = [];
+
+  signatureList.forEach((signature: WizData) => {
+    publicKeyList.forEach((pk) => {
+      signResults.push(ecdsaVerify(signature, hashedMessage, pk));
+    });
+  });
+
+  const confirmedSignaturesLength = signResults.filter((sr) => sr.number === 1).length;
+
+  return confirmedSignaturesLength === signatureList.length ? WizData.fromNumber(1) : WizData.fromNumber(0);
+};
+
 // taproot feature
-// export const tweakVerify = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData => {
-//   const internalKey = wizData3;
-//   const vchTweak = wizData2;
-//   const vchTweakedKey = wizData;
+export const tweakVerify = (wizData: WizData, wizData2: WizData, wizData3: WizData): WizData => {
+  const internalKey = wizData3;
+  const vchTweak = wizData2;
+  const vchTweakedKey = wizData;
 
-//   if (vchTweak.bytes.length != 32) throw "Tweak key length must be eqaul 32 byte";
+  if (vchTweak.bytes.length != 32) throw "Tweak key length must be equal 32 byte";
 
-//   if (internalKey.bytes.length != 32) throw "Internal key length must be eqaul 32 byte";
+  if (internalKey.bytes.length != 32) throw "Internal key length must be equal 32 byte";
 
-//   if (vchTweakedKey.bytes[0] !== 2 && vchTweakedKey.bytes[0] !== 3) throw "Tweaked key must start with 0x02 or 0x03";
+  if (vchTweakedKey.bytes[0] !== 2 && vchTweakedKey.bytes[0] !== 3) throw "Tweaked key must start with 0x02 or 0x03";
 
-//   const isChecked: boolean = publicKeyTweakCheckWithPrefix(internalKey, vchTweak, vchTweakedKey);
+  const isChecked: boolean = publicKeyTweakCheckWithPrefix(internalKey, vchTweak, vchTweakedKey);
 
-//   return WizData.fromNumber(isChecked ? 1 : 0);
-// };
+  return WizData.fromNumber(isChecked ? 1 : 0);
+};
+
+export const shnorrSigVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizData => {
+  if (pubkey.bytes.length !== 32) throw "Schnorr Verify error : invalid public key length";
+
+  if (sig.bytes.length !== 64) throw "Schnorr Verify error : signature length must be equal 64 byte";
+
+  const publicKey = Buffer.from(pubkey.hex, "hex");
+  const signature = Buffer.from(sig.hex, "hex");
+  const message = Buffer.from(msg.hex, "hex");
+
+  try {
+    return WizData.fromNumber(bcrypto.schnorr.verify(message, signature, publicKey) ? 1 : 0);
+  } catch {
+    throw "ECDSA Verify error : something went wrong";
+  }
+};
 
 type Keys = {
   privateKey: WizData;
@@ -205,56 +301,6 @@ export const schnorrCreatePublicKey = (privateKey: WizData): Keys => {
   const uncompressedPubKey = "04" + xAxisHex + yAxisHex;
 
   return { privateKey, publicKey: WizData.fromHex(pubKeyHex), uncompressedPubKey: WizData.fromHex(uncompressedPubKey) };
-};
-
-export const ecdsaVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizData => {
-  const secp256k1 = new elliptic.ec("secp256k1");
-  const hashedMessage = sha256(msg).toString();
-  const publicKey = pubkey.hex;
-  const signature = sig.hex;
-
-  if (publicKey.length !== 66) throw "ECDSA Verify error : invalid public key length";
-
-  if (!signature.startsWith("30")) throw "ECDSA Verify error : signature must start with 0x30";
-
-  const rAndSDataSize = Number("0x" + signature.substr(2, 2));
-
-  const signatureStringLength = rAndSDataSize * 2 + 4;
-
-  if (signature.length !== signatureStringLength) throw "ECDSA Verify error : signature length invalid";
-
-  const rDataSize = Number("0x" + signature.substr(6, 2));
-
-  const rValue = signature.substr(8, rDataSize * 2);
-
-  const sDataSize = Number("0x" + signature.substr(10 + rDataSize * 2, 2));
-
-  const sValue = signature.substr(10 + rDataSize * 2 + 2, sDataSize * 2);
-
-  const rBn = new BN(rValue, "hex");
-  const sBn = new BN(sValue, "hex");
-
-  try {
-    return WizData.fromNumber(secp256k1.verify(hashedMessage, { r: rBn, s: sBn }, secp256k1.keyFromPublic(publicKey, "hex")) ? 1 : 0);
-  } catch {
-    throw "ECDSA Verify error : something went wrong";
-  }
-};
-
-export const shnorrSigVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizData => {
-  if (pubkey.bytes.length !== 32) throw "Schnorr Verify error : invalid public key length";
-
-  if (sig.bytes.length !== 64) throw "Schnorr Verify error : signature length must be equal 64 byte";
-
-  const publicKey = Buffer.from(pubkey.hex, "hex");
-  const signature = Buffer.from(sig.hex, "hex");
-  const message = Buffer.from(msg.hex, "hex");
-
-  try {
-    return WizData.fromNumber(bcrypto.schnorr.verify(message, signature, publicKey) ? 1 : 0);
-  } catch {
-    throw "ECDSA Verify error : something went wrong";
-  }
 };
 
 // const ECDSA = (messageHash: string, publicKey: string): string => {

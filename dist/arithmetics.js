@@ -80,7 +80,7 @@ exports.mul = mul;
 var div = function (wizData, wizData2) {
     if (wizData.number !== undefined && wizData2.number !== undefined) {
         if (wizData2.number === 0)
-            throw "Error: dividing can't be eqaul 0.";
+            throw "Error: dividing can't be equal 0.";
         var divValue = wizData.number / wizData2.number;
         divValue = divValue > 0 ? Math.floor(divValue) : Math.ceil(divValue);
         return wiz_data_1.default.fromNumber(divValue);

@@ -1,8 +1,10 @@
 import WizData, { hexLE } from "@script-wiz/wiz-data";
 import { numToLE32, numToLE64 } from "./convertion";
 import { hash256, sha256 } from "./crypto";
-import { TxData, TxInput, TxOutput } from "./model";
+import { TAPROOT_VERSION, TxData, TxInput, TxOutput } from "./model";
 import { size } from "./splices";
+import { tapLeaf } from "./taproot";
+import { VM_NETWORK } from "./taproot/model";
 
 // ref https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
 
@@ -68,7 +70,7 @@ const calculateHashOutputs = (outputs: TxOutput[], isSegwit = true) => {
   outputs.forEach((output: TxOutput) => {
     if (output.amount === "" || output.scriptPubKey === "") throw "Amount and scriptPubkey must not be empty in output transaction template";
 
-    hashOutputs += numToLE64(WizData.fromNumber(Number(output.amount))).hex + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
+    hashOutputs += numToLE64(WizData.fromNumber(Number(output.amount) * 100000000)).hex + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
   });
 
   return isSegwit ? hash256(WizData.fromHex(hashOutputs)).toString() : sha256(WizData.fromHex(hashOutputs)).toString();
@@ -92,7 +94,7 @@ const calculateInputAmounts = (inputs: TxInput[]) => {
 
   inputs.forEach((input: TxInput) => {
     if (input.amount === "") throw "Input amounts must not be empty";
-    inputAmounts += numToLE64(WizData.fromNumber(Number(input.amount))).hex;
+    inputAmounts += numToLE64(WizData.fromNumber(Number(input.amount) * 100000000)).hex;
   });
 
   return sha256(WizData.fromHex(inputAmounts)).toString();
@@ -122,7 +124,7 @@ const calculateInputSequences = (inputs: TxInput[]) => {
   return sha256(WizData.fromHex(inputSequences)).toString();
 };
 
-export const taprootSerialization = (data: TxData) => {
+export const taprootSerialization = (data: TxData, script: string, network: VM_NETWORK) => {
   const concat = "00";
   const sighashType = "00";
 
@@ -142,9 +144,13 @@ export const taprootSerialization = (data: TxData) => {
 
   const outputs = calculateHashOutputs(data.outputs, false);
 
-  const spendType = "00";
+  const spendType = "02";
 
   const currentIndex = numToLE32(WizData.fromNumber(data.currentInputIndex)).hex;
 
-  return concat + sighashType + version + timelock + hashPrevouts + inputAmountsSha + inputPubkeySha + inputSequencesSha + outputs + spendType + currentIndex;
+  const tapleaf = tapLeaf(WizData.fromHex(script), network === VM_NETWORK.BTC ? "c0" : "c4");
+
+  return (
+    concat + sighashType + version + timelock + hashPrevouts + inputAmountsSha + inputPubkeySha + inputSequencesSha + outputs + spendType + currentIndex + tapleaf + "00ffffffff"
+  );
 };
