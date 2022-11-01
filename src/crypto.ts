@@ -9,6 +9,13 @@ import { segwitSerialization, taprootSerialization } from "./serialization";
 import { VM, VM_NETWORK_VERSION } from "./taproot/model";
 import { taproot } from ".";
 
+export enum SIGHASH_TYPE {
+  SIGHASH_ALL = "01",
+  SIGHASH_NONE = "02",
+  SIGHASH_SINGLE = "03",
+  SIGHASH_ANYONECANPAY = "80",
+}
+
 // TO DO @afarukcali review
 
 export const ripemd160 = (wizData: WizData): CryptoJS.lib.WordArray => {
@@ -80,37 +87,48 @@ export const ecdsaVerify = (sig: WizData, msg: WizData, pubkey: WizData): WizDat
   }
 };
 
-export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData, version: VM, script: string): WizData => {
+export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: TxData, version: VM, script: string, codeSeperator: string): WizData => {
   // stackData 1 = signature
   // stackData 2 = pubkey
+  let signature = wizData;
+  let sighashType = SIGHASH_TYPE.SIGHASH_SINGLE;
 
-  const message = version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network);
+  if (signature.bytes.length === 65) {
+    signature = WizData.fromBytes(signature.bytes.slice(0, 64));
+    sighashType = WizData.fromNumber(signature.bytes[64]).hex as SIGHASH_TYPE;
+  }
+
+  const message =
+    version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network, sighashType, codeSeperator);
 
   if (version.ver === VM_NETWORK_VERSION.TAPSCRIPT) {
     const tagHashResult = WizData.fromHex(taproot.tagHash("TapSighash", WizData.fromHex(message)));
 
-    return shnorrSigVerify(wizData, tagHashResult, wizData2);
+    return shnorrSigVerify(signature, tagHashResult, wizData2);
   }
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
-  return ecdsaVerify(wizData, hashedMessage, wizData2);
+  return ecdsaVerify(signature, hashedMessage, wizData2);
 };
 
-export const checkSigAdd = (wizData: WizData, wizData2: WizData, wizData3: WizData, txTemplateData: TxData, version: VM, script: string): WizData => {
+export const checkSigAdd = (wizData: WizData, wizData2: WizData, wizData3: WizData, txTemplateData: TxData, version: VM, script: string, codeSeperator: string): WizData => {
   // stackData 1 = signature
   // stackData 2 = check sig result 0 or 1
   // stackData 3 = pubkey
   if (wizData2.number === undefined) throw "Checksigadd Verify error : checksig result must be number";
 
-  const result = checkSig(wizData, wizData3, txTemplateData, version, script);
+  const result = checkSig(wizData, wizData3, txTemplateData, version, script, codeSeperator);
 
   if (result.number === undefined) throw "Checksigadd Verify error : checksig result must be number";
 
   return WizData.fromNumber(result.number + wizData2.number);
 };
 
-export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM, script: string): WizData => {
-  const message = version.ver === VM_NETWORK_VERSION.SEGWIT ? segwitSerialization(txTemplateData) : taprootSerialization(txTemplateData, script, version.network);
+export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM, script: string, codeSeperator: string): WizData => {
+  const message =
+    version.ver === VM_NETWORK_VERSION.SEGWIT
+      ? segwitSerialization(txTemplateData)
+      : taprootSerialization(txTemplateData, script, version.network, SIGHASH_TYPE.SIGHASH_ALL, codeSeperator);
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
   let signResults: WizData[] = [];

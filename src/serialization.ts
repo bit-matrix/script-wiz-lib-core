@@ -1,7 +1,7 @@
 import WizData, { hexLE } from "@script-wiz/wiz-data";
-import { numToLE32, numToLE64 } from "./convertion";
-import { hash256, sha256 } from "./crypto";
-import { TAPROOT_VERSION, TxData, TxInput, TxOutput } from "./model";
+import { convert32, numToLE32, numToLE64 } from "./convertion";
+import { hash256, sha256, SIGHASH_TYPE } from "./crypto";
+import { TxData, TxInput, TxOutput } from "./model";
 import { size } from "./splices";
 import { tapLeaf } from "./taproot";
 import { VM_NETWORK } from "./taproot/model";
@@ -124,9 +124,8 @@ const calculateInputSequences = (inputs: TxInput[]) => {
   return sha256(WizData.fromHex(inputSequences)).toString();
 };
 
-export const taprootSerialization = (data: TxData, script: string, network: VM_NETWORK) => {
+export const taprootSerialization = (data: TxData, script: string, network: VM_NETWORK, sighashType: SIGHASH_TYPE, codeSeperator: string) => {
   const concat = "00";
-  const sighashType = "00";
 
   if (data.version === "") throw "Version must not be empty in transaction template";
   const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
@@ -142,7 +141,15 @@ export const taprootSerialization = (data: TxData, script: string, network: VM_N
 
   const inputSequencesSha = calculateInputSequences(data.inputs);
 
-  const outputs = calculateHashOutputs(data.outputs, false);
+  //sighash_single da bu yok
+  let outputs;
+  let sighashSingleOutput;
+
+  if (sighashType !== SIGHASH_TYPE.SIGHASH_SINGLE) {
+    outputs = calculateHashOutputs(data.outputs, false);
+  } else {
+    sighashSingleOutput = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+  }
 
   const spendType = "02";
 
@@ -150,7 +157,22 @@ export const taprootSerialization = (data: TxData, script: string, network: VM_N
 
   const tapleaf = tapLeaf(WizData.fromHex(script), network === VM_NETWORK.BTC ? "c0" : "c4");
 
-  return (
-    concat + sighashType + version + timelock + hashPrevouts + inputAmountsSha + inputPubkeySha + inputSequencesSha + outputs + spendType + currentIndex + tapleaf + "00ffffffff"
-  );
+  return concat +
+    sighashType +
+    version +
+    timelock +
+    hashPrevouts +
+    inputAmountsSha +
+    inputPubkeySha +
+    inputSequencesSha +
+    outputs +
+    spendType +
+    currentIndex +
+    sighashSingleOutput +
+    tapleaf +
+    "00" +
+    codeSeperator !==
+    ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
 };
