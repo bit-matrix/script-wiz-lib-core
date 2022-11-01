@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.schnorrCreatePublicKey = exports.secp256k1CreatePublicKey = exports.secp256k1Verify = exports.schnorrSign = exports.secp256k1Sign = exports.schnorrKeyGenerator = exports.secp256k1KeyGenerator = exports.shnorrSigVerify = exports.tweakVerify = exports.checkMultiSig = exports.checkSigAdd = exports.checkSig = exports.ecdsaVerify = exports.hash256 = exports.hash160v2 = exports.sha256v2 = exports.hash160 = exports.sha256 = exports.sha1 = exports.ripemd160 = void 0;
+exports.schnorrCreatePublicKey = exports.secp256k1CreatePublicKey = exports.secp256k1Verify = exports.schnorrSign = exports.secp256k1Sign = exports.schnorrKeyGenerator = exports.secp256k1KeyGenerator = exports.shnorrSigVerify = exports.tweakVerify = exports.checkMultiSig = exports.checkSigAdd = exports.checkSig = exports.ecdsaVerify = exports.hash256 = exports.hash160v2 = exports.sha256v2 = exports.hash160 = exports.sha256 = exports.sha1 = exports.ripemd160 = exports.SIGHASH_TYPE = void 0;
 var crypto_js_1 = __importDefault(require("crypto-js"));
 var elliptic_1 = __importDefault(require("elliptic"));
 var bn_js_1 = __importDefault(require("bn.js"));
@@ -13,6 +13,13 @@ var taproot_1 = require("./taproot");
 var serialization_1 = require("./serialization");
 var model_1 = require("./taproot/model");
 var _1 = require(".");
+var SIGHASH_TYPE;
+(function (SIGHASH_TYPE) {
+    SIGHASH_TYPE["SIGHASH_ALL"] = "01";
+    SIGHASH_TYPE["SIGHASH_NONE"] = "02";
+    SIGHASH_TYPE["SIGHASH_SINGLE"] = "03";
+    SIGHASH_TYPE["SIGHASH_ANYONECANPAY"] = "80";
+})(SIGHASH_TYPE = exports.SIGHASH_TYPE || (exports.SIGHASH_TYPE = {}));
 // TO DO @afarukcali review
 var ripemd160 = function (wizData) {
     return crypto_js_1.default.RIPEMD160(crypto_js_1.default.enc.Hex.parse(wizData.hex));
@@ -75,32 +82,40 @@ var ecdsaVerify = function (sig, msg, pubkey) {
     }
 };
 exports.ecdsaVerify = ecdsaVerify;
-var checkSig = function (wizData, wizData2, txTemplateData, version, script) {
+var checkSig = function (wizData, wizData2, txTemplateData, version, script, codeSeperator) {
     // stackData 1 = signature
     // stackData 2 = pubkey
-    var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network);
+    var signature = wizData;
+    var sighashType = SIGHASH_TYPE.SIGHASH_SINGLE;
+    if (signature.bytes.length === 65) {
+        signature = wiz_data_1.default.fromBytes(signature.bytes.slice(0, 64));
+        sighashType = wiz_data_1.default.fromNumber(signature.bytes[64]).hex;
+    }
+    var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network, sighashType, codeSeperator);
     if (version.ver === model_1.VM_NETWORK_VERSION.TAPSCRIPT) {
         var tagHashResult = wiz_data_1.default.fromHex(_1.taproot.tagHash("TapSighash", wiz_data_1.default.fromHex(message)));
-        return (0, exports.shnorrSigVerify)(wizData, tagHashResult, wizData2);
+        return (0, exports.shnorrSigVerify)(signature, tagHashResult, wizData2);
     }
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
-    return (0, exports.ecdsaVerify)(wizData, hashedMessage, wizData2);
+    return (0, exports.ecdsaVerify)(signature, hashedMessage, wizData2);
 };
 exports.checkSig = checkSig;
-var checkSigAdd = function (wizData, wizData2, wizData3, txTemplateData, version, script) {
+var checkSigAdd = function (wizData, wizData2, wizData3, txTemplateData, version, script, codeSeperator) {
     // stackData 1 = signature
     // stackData 2 = check sig result 0 or 1
     // stackData 3 = pubkey
     if (wizData2.number === undefined)
         throw "Checksigadd Verify error : checksig result must be number";
-    var result = (0, exports.checkSig)(wizData, wizData3, txTemplateData, version, script);
+    var result = (0, exports.checkSig)(wizData, wizData3, txTemplateData, version, script, codeSeperator);
     if (result.number === undefined)
         throw "Checksigadd Verify error : checksig result must be number";
     return wiz_data_1.default.fromNumber(result.number + wizData2.number);
 };
 exports.checkSigAdd = checkSigAdd;
-var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version, script) {
-    var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT ? (0, serialization_1.segwitSerialization)(txTemplateData) : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network);
+var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version, script, codeSeperator) {
+    var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT
+        ? (0, serialization_1.segwitSerialization)(txTemplateData)
+        : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network, SIGHASH_TYPE.SIGHASH_ALL, codeSeperator);
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
     var signResults = [];
     signatureList.forEach(function (signature) {

@@ -131,9 +131,8 @@ var calculateInputSequences = function (inputs) {
     });
     return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputSequences)).toString();
 };
-var taprootSerialization = function (data, script, network) {
+var taprootSerialization = function (data, script, network, sighashType, codeSeperator) {
     var concat = "00";
-    var sighashType = "00";
     if (data.version === "")
         throw "Version must not be empty in transaction template";
     var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
@@ -144,11 +143,33 @@ var taprootSerialization = function (data, script, network) {
     var inputAmountsSha = calculateInputAmounts(data.inputs);
     var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
     var inputSequencesSha = calculateInputSequences(data.inputs);
-    var outputs = calculateHashOutputs(data.outputs, false);
+    //sighash_single da bu yok
+    var outputs;
+    var sighashSingleOutput;
+    if (sighashType !== crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE) {
+        outputs = calculateHashOutputs(data.outputs, false);
+    }
+    else {
+        sighashSingleOutput = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+    }
     var spendType = "02";
     var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
     var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
-    return (concat + sighashType + version + timelock + hashPrevouts + inputAmountsSha + inputPubkeySha + inputSequencesSha + outputs + spendType + currentIndex + tapleaf + "00ffffffff");
+    return (concat +
+        sighashType +
+        version +
+        timelock +
+        hashPrevouts +
+        inputAmountsSha +
+        inputPubkeySha +
+        inputSequencesSha +
+        outputs +
+        spendType +
+        currentIndex +
+        sighashSingleOutput +
+        tapleaf +
+        "00" +
+        "ffffffff");
 };
 exports.taprootSerialization = taprootSerialization;
 //# sourceMappingURL=serialization.js.map

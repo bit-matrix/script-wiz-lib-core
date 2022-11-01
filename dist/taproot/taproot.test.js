@@ -4,8 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var wiz_data_1 = __importDefault(require("@script-wiz/wiz-data"));
-var model_1 = require("../model");
-var __1 = require("..");
 // test("xxx", () => {
 //   const x = "038a759932b19c2bf441e4e37a0243f03364df38cec1c658743dffa56c334dfb2d";
 //   const data = WizData.fromHex(x);
@@ -74,11 +72,15 @@ var __1 = require("..");
 //   console.log(result);
 // });
 test("multileaf", function () {
-    var scripts = [wiz_data_1.default.fromHex("517551")];
-    var version = model_1.TAPROOT_VERSION.BITCOIN;
-    var pubkey = wiz_data_1.default.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
-    var treeHelperResult = __1.taproot.controlBlockCalculation(scripts, "c0", pubkey.hex, 0);
-    console.log(treeHelperResult);
+    var scripts = wiz_data_1.default.fromHex("517551111111");
+    console.log(scripts.bytes[5]);
+    console.log(scripts.bytes);
+    console.log(scripts.bytes.length);
+    console.log(scripts.bytes.BYTES_PER_ELEMENT);
+    // const version = TAPROOT_VERSION.BITCOIN;
+    // const pubkey = WizData.fromHex("1dae61a4a8f841952be3a511502d4f56e889ffa0685aa0098773ea2d4309f624");
+    // const treeHelperResult = taproot.controlBlockCalculation(scripts, "c0", pubkey.hex, 0);
+    // console.log(treeHelperResult);
     // console.log("multileaf", treeHelperResult);
 });
 //# sourceMappingURL=taproot.test.js.map
