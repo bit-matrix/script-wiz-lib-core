@@ -125,6 +125,25 @@ const calculateInputSequences = (inputs: TxInput[]) => {
 };
 
 export const taprootSerialization = (data: TxData, script: string, network: VM_NETWORK, sighashType: SIGHASH_TYPE, codeSeperator: string) => {
+  switch (sighashType) {
+    case SIGHASH_TYPE.SIGHASH_ALL:
+      return sighashAll(data, script, network, codeSeperator);
+
+    case SIGHASH_TYPE.SIGHASH_SINGLE:
+      return sighashSingle(data, script, network, codeSeperator);
+
+    case SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
+      return sighashAnyonecanpay(data, script, network, codeSeperator);
+
+    case SIGHASH_TYPE.SIGHASH_NONE:
+      return sighashNone(data, script, network, codeSeperator);
+
+    default:
+      return sighashAll(data, script, network, codeSeperator);
+  }
+};
+
+const sighashAll = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
   const concat = "00";
 
   if (data.version === "") throw "Version must not be empty in transaction template";
@@ -141,24 +160,16 @@ export const taprootSerialization = (data: TxData, script: string, network: VM_N
 
   const inputSequencesSha = calculateInputSequences(data.inputs);
 
-  //sighash_single da bu yok
-  let outputs;
-  let sighashSingleOutput;
-
-  if (sighashType !== SIGHASH_TYPE.SIGHASH_SINGLE) {
-    outputs = calculateHashOutputs(data.outputs, false);
-  } else {
-    sighashSingleOutput = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
-  }
-
   const spendType = "02";
 
   const currentIndex = numToLE32(WizData.fromNumber(data.currentInputIndex)).hex;
 
   const tapleaf = tapLeaf(WizData.fromHex(script), network === VM_NETWORK.BTC ? "c0" : "c4");
 
+  const outputs = calculateHashOutputs(data.outputs, false);
+
   return concat +
-    sighashType +
+    SIGHASH_TYPE.SIGHASH_ALL +
     version +
     timelock +
     hashPrevouts +
@@ -168,7 +179,135 @@ export const taprootSerialization = (data: TxData, script: string, network: VM_N
     outputs +
     spendType +
     currentIndex +
-    sighashSingleOutput +
+    tapleaf +
+    "00" +
+    codeSeperator !==
+    ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
+};
+
+const sighashSingle = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
+  const concat = "00";
+
+  if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
+
+  if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
+
+  const hashPrevouts = calculatePrevouts(data.inputs, false);
+
+  const inputAmountsSha = calculateInputAmounts(data.inputs);
+
+  const inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
+
+  const inputSequencesSha = calculateInputSequences(data.inputs);
+
+  const spendType = "02";
+
+  const currentIndex = numToLE32(WizData.fromNumber(data.currentInputIndex)).hex;
+
+  const tapleaf = tapLeaf(WizData.fromHex(script), network === VM_NETWORK.BTC ? "c0" : "c4");
+
+  const outputs = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+
+  return concat +
+    SIGHASH_TYPE.SIGHASH_SINGLE +
+    version +
+    timelock +
+    hashPrevouts +
+    inputAmountsSha +
+    inputPubkeySha +
+    inputSequencesSha +
+    outputs +
+    spendType +
+    currentIndex +
+    tapleaf +
+    "00" +
+    codeSeperator !==
+    ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
+};
+
+const sighashAnyonecanpay = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
+  const concat = "00";
+
+  if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
+
+  if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
+
+  const currentInput = data.inputs[data.currentInputIndex];
+
+  const outpoint = currentInput.previousTxId + currentInput.vout;
+
+  const amount = numToLE64(WizData.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+
+  const nSequence = hexLE(currentInput.sequence);
+
+  const spendType = "02";
+
+  const currentIndex = numToLE32(WizData.fromNumber(data.currentInputIndex)).hex;
+
+  const tapleaf = tapLeaf(WizData.fromHex(script), network === VM_NETWORK.BTC ? "c0" : "c4");
+
+  const outputs = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+
+  return concat +
+    SIGHASH_TYPE.SIGHASH_ANYONECANPAY +
+    version +
+    timelock +
+    outpoint +
+    amount +
+    currentInput.scriptPubKey +
+    nSequence +
+    outputs +
+    spendType +
+    currentIndex +
+    tapleaf +
+    "00" +
+    codeSeperator !==
+    ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
+};
+
+const sighashNone = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
+  const concat = "00";
+
+  if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
+
+  if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
+
+  const hashPrevouts = calculatePrevouts(data.inputs, false);
+
+  const inputAmountsSha = calculateInputAmounts(data.inputs);
+
+  const inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
+
+  const inputSequencesSha = calculateInputSequences(data.inputs);
+
+  const spendType = "02";
+
+  const currentIndex = numToLE32(WizData.fromNumber(data.currentInputIndex)).hex;
+
+  const tapleaf = tapLeaf(WizData.fromHex(script), network === VM_NETWORK.BTC ? "c0" : "c4");
+
+  return concat +
+    SIGHASH_TYPE.SIGHASH_SINGLE +
+    version +
+    timelock +
+    hashPrevouts +
+    inputAmountsSha +
+    inputPubkeySha +
+    inputSequencesSha +
+    spendType +
+    currentIndex +
     tapleaf +
     "00" +
     codeSeperator !==
