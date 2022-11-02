@@ -132,6 +132,21 @@ var calculateInputSequences = function (inputs) {
     return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputSequences)).toString();
 };
 var taprootSerialization = function (data, script, network, sighashType, codeSeperator) {
+    switch (sighashType) {
+        case crypto_1.SIGHASH_TYPE.SIGHASH_ALL:
+            return sighashAll(data, script, network, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE:
+            return sighashSingle(data, script, network, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
+            return sighashAnyonecanpay(data, script, network, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_NONE:
+            return sighashNone(data, script, network, codeSeperator);
+        default:
+            return sighashAll(data, script, network, codeSeperator);
+    }
+};
+exports.taprootSerialization = taprootSerialization;
+var sighashAll = function (data, script, network, codeSeperator) {
     var concat = "00";
     if (data.version === "")
         throw "Version must not be empty in transaction template";
@@ -143,20 +158,12 @@ var taprootSerialization = function (data, script, network, sighashType, codeSep
     var inputAmountsSha = calculateInputAmounts(data.inputs);
     var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
     var inputSequencesSha = calculateInputSequences(data.inputs);
-    //sighash_single da bu yok
-    var outputs;
-    var sighashSingleOutput;
-    if (sighashType !== crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE) {
-        outputs = calculateHashOutputs(data.outputs, false);
-    }
-    else {
-        sighashSingleOutput = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
-    }
     var spendType = "02";
     var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
     var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
-    return (concat +
-        sighashType +
+    var outputs = calculateHashOutputs(data.outputs, false);
+    return concat +
+        crypto_1.SIGHASH_TYPE.SIGHASH_ALL +
         version +
         timelock +
         hashPrevouts +
@@ -166,10 +173,111 @@ var taprootSerialization = function (data, script, network, sighashType, codeSep
         outputs +
         spendType +
         currentIndex +
-        sighashSingleOutput +
         tapleaf +
         "00" +
-        "ffffffff");
+        codeSeperator !==
+        ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
 };
-exports.taprootSerialization = taprootSerialization;
+var sighashSingle = function (data, script, network, codeSeperator) {
+    var concat = "00";
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    var hashPrevouts = calculatePrevouts(data.inputs, false);
+    var inputAmountsSha = calculateInputAmounts(data.inputs);
+    var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
+    var inputSequencesSha = calculateInputSequences(data.inputs);
+    var spendType = "02";
+    var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
+    var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
+    var outputs = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+    return concat +
+        crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE +
+        version +
+        timelock +
+        hashPrevouts +
+        inputAmountsSha +
+        inputPubkeySha +
+        inputSequencesSha +
+        outputs +
+        spendType +
+        currentIndex +
+        tapleaf +
+        "00" +
+        codeSeperator !==
+        ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
+};
+var sighashAnyonecanpay = function (data, script, network, codeSeperator) {
+    var concat = "00";
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    var currentInput = data.inputs[data.currentInputIndex];
+    var outpoint = currentInput.previousTxId + currentInput.vout;
+    var amount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+    var nSequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
+    var spendType = "02";
+    var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
+    var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
+    var outputs = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+    return concat +
+        crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY +
+        version +
+        timelock +
+        outpoint +
+        amount +
+        currentInput.scriptPubKey +
+        nSequence +
+        outputs +
+        spendType +
+        currentIndex +
+        tapleaf +
+        "00" +
+        codeSeperator !==
+        ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
+};
+var sighashNone = function (data, script, network, codeSeperator) {
+    var concat = "00";
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    var hashPrevouts = calculatePrevouts(data.inputs, false);
+    var inputAmountsSha = calculateInputAmounts(data.inputs);
+    var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
+    var inputSequencesSha = calculateInputSequences(data.inputs);
+    var spendType = "02";
+    var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
+    var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
+    return concat +
+        crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE +
+        version +
+        timelock +
+        hashPrevouts +
+        inputAmountsSha +
+        inputPubkeySha +
+        inputSequencesSha +
+        spendType +
+        currentIndex +
+        tapleaf +
+        "00" +
+        codeSeperator !==
+        ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
+};
 //# sourceMappingURL=serialization.js.map
