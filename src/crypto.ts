@@ -100,7 +100,7 @@ export const checkSig = (wizData: WizData, wizData2: WizData, txTemplateData: Tx
 
   const message =
     version.ver === VM_NETWORK_VERSION.SEGWIT
-      ? segwitSerialization(txTemplateData, sighashType, codeSeperator)
+      ? segwitSerialization(txTemplateData, sighashType, script.substring(WizData.fromHex(codeSeperator).number || 0))
       : taprootSerialization(txTemplateData, script, version.network, sighashType, codeSeperator);
 
   if (version.ver === VM_NETWORK_VERSION.TAPSCRIPT) {
@@ -129,7 +129,7 @@ export const checkSigAdd = (wizData: WizData, wizData2: WizData, wizData3: WizDa
 export const checkMultiSig = (publicKeyList: WizData[], signatureList: WizData[], txTemplateData: TxData, version: VM, script: string, codeSeperator: string): WizData => {
   const message =
     version.ver === VM_NETWORK_VERSION.SEGWIT
-      ? segwitSerialization(txTemplateData, SIGHASH_TYPE.SIGHASH_ALL, codeSeperator)
+      ? segwitSerialization(txTemplateData, SIGHASH_TYPE.SIGHASH_ALL, script.substring(WizData.fromHex(codeSeperator).number || 0))
       : taprootSerialization(txTemplateData, script, version.network, SIGHASH_TYPE.SIGHASH_ALL, codeSeperator);
   const hashedMessage = WizData.fromHex(sha256(WizData.fromHex(message)).toString());
 
