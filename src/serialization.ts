@@ -1,10 +1,11 @@
 import WizData, { hexLE } from "@script-wiz/wiz-data";
 import { convert32, numToLE32, numToLE64 } from "./convertion";
-import { hash256, sha256, SIGHASH_TYPE } from "./crypto";
-import { TxData, TxInput, TxOutput } from "./model";
+import { hash256, SIGHASH_TYPE } from "./crypto";
+import { TxData } from "./model";
 import { size } from "./splices";
 import { tapLeaf } from "./taproot";
 import { VM_NETWORK } from "./taproot/model";
+import { calculateHashOutputs, calculateInputAmounts, calculateInputScriptPubkeys, calculateInputSequences, calculatePrevouts, emptyUnit } from "./utils/serializationutils";
 
 // ref https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
 
@@ -19,7 +20,42 @@ import { VM_NETWORK } from "./taproot/model";
 // 8. hashOutputs (32-byte hash)
 // 9. nLocktime of the transaction (4-byte little endian)
 // 10. sighash type of the signature (4-byte little endian)
-export const segwitSerialization = (data: TxData) => {
+export const segwitSerialization = (data: TxData, sighashType: SIGHASH_TYPE, codeSeperator: string) => {
+  switch (sighashType) {
+    case SIGHASH_TYPE.SIGHASH_ALL:
+      return sighashAll(data, codeSeperator);
+    case SIGHASH_TYPE.SIGHASH_SINGLE:
+      return sighashSingle(data, codeSeperator);
+    case SIGHASH_TYPE.SIGHASH_NONE:
+      return sighashNone(data, codeSeperator);
+    case SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
+      return sighashAnyonecanpay(data, codeSeperator);
+
+    default:
+      return sighashAll(data, codeSeperator);
+  }
+};
+
+export const taprootSerialization = (data: TxData, script: string, network: VM_NETWORK, sighashType: SIGHASH_TYPE, codeSeperator: string) => {
+  switch (sighashType) {
+    case SIGHASH_TYPE.SIGHASH_ALL:
+      return sighashAllT(data, script, network, codeSeperator);
+
+    case SIGHASH_TYPE.SIGHASH_SINGLE:
+      return sighashSingleT(data, script, network, codeSeperator);
+
+    case SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
+      return sighashAnyonecanpayT(data, script, network, codeSeperator);
+
+    case SIGHASH_TYPE.SIGHASH_NONE:
+      return sighashNoneT(data, script, network, codeSeperator);
+
+    default:
+      return sighashAllT(data, script, network, codeSeperator);
+  }
+};
+
+const sighashAll = (data: TxData, codeSeperator: string) => {
   const currentInput = data.inputs[data.currentInputIndex];
 
   if (currentInput.scriptPubKey === "") throw "scriptPubkey must not be empty in transaction template";
@@ -61,86 +97,142 @@ export const segwitSerialization = (data: TxData) => {
   // 8 hashOutputs
   const hashOutputs = calculateHashOutputs(data.outputs);
 
-  return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01000000";
+  return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
 };
 
-const calculateHashOutputs = (outputs: TxOutput[], isSegwit = true) => {
-  let hashOutputs = "";
+const sighashSingle = (data: TxData, codeSeperator: string) => {
+  const currentInput = data.inputs[data.currentInputIndex];
 
-  outputs.forEach((output: TxOutput) => {
-    if (output.amount === "" || output.scriptPubKey === "") throw "Amount and scriptPubkey must not be empty in output transaction template";
+  if (currentInput.scriptPubKey === "") throw "scriptPubkey must not be empty in transaction template";
 
-    hashOutputs += numToLE64(WizData.fromNumber(Number(output.amount) * 100000000)).hex + size(WizData.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
-  });
+  const scriptCode = WizData.fromHex(currentInput.scriptPubKey);
 
-  return isSegwit ? hash256(WizData.fromHex(hashOutputs)).toString() : sha256(WizData.fromHex(hashOutputs)).toString();
+  if (currentInput.vout === "") throw "Vout must not be empty in transaction template";
+  const vout = numToLE32(WizData.fromNumber(Number(currentInput.vout))).hex;
+
+  if (currentInput.amount === "") throw "Amount must not be empty in transaction template";
+  const inputAmount = numToLE64(WizData.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+
+  if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
+
+  if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
+
+  // 2 (32-byte hash)
+
+  if (currentInput.previousTxId === "") throw "Previous TX ID must not be empty in transaction template";
+  const hashPrevouts = calculatePrevouts(data.inputs);
+
+  if (currentInput.sequence === "") throw "Sequence must not be empty in transaction template";
+  const nsequence = hexLE(currentInput.sequence);
+
+  // 3 (32-byte hash)
+  const hashSequence = emptyUnit;
+
+  // 4. outpoint (32-byte hash + 4-byte little endian)
+  const outpoint = hexLE(currentInput.previousTxId) + vout;
+  if (outpoint === "") throw "Previous TX ID and Vout must not be empty in transaction template";
+
+  // 5. script code hash
+  const scriptCodeSize = size(scriptCode).hex.substring(0, 2);
+  if (scriptCodeSize === "") throw "scriptPubkey must not be empty in transaction template";
+
+  let hashOutputs = emptyUnit;
+
+  if (data.currentInputIndex < data.outputs.length) hashOutputs = calculateHashOutputs([data.outputs[data.currentInputIndex]]);
+
+  return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
 };
 
-const calculatePrevouts = (inputs: TxInput[], isSegwit = true) => {
-  let hashInputs = "";
+const sighashNone = (data: TxData, codeSeperator: string) => {
+  const currentInput = data.inputs[data.currentInputIndex];
 
-  inputs.forEach((input: TxInput) => {
-    if (input.previousTxId === "" || input.vout === "") throw "Previous tx id and vout must not be empty";
-    const vout = numToLE32(WizData.fromNumber(Number(input.vout))).hex;
+  if (currentInput.scriptPubKey === "") throw "scriptPubkey must not be empty in transaction template";
 
-    hashInputs += WizData.fromHex(hexLE(input.previousTxId) + vout).hex;
-  });
+  const scriptCode = WizData.fromHex(currentInput.scriptPubKey);
 
-  return isSegwit ? hash256(WizData.fromHex(hashInputs)).toString() : sha256(WizData.fromHex(hashInputs)).toString();
+  if (currentInput.vout === "") throw "Vout must not be empty in transaction template";
+  const vout = numToLE32(WizData.fromNumber(Number(currentInput.vout))).hex;
+
+  if (currentInput.amount === "") throw "Amount must not be empty in transaction template";
+  const inputAmount = numToLE64(WizData.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+
+  if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
+
+  if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
+
+  // 2 (32-byte hash)
+
+  if (currentInput.previousTxId === "") throw "Previous TX ID must not be empty in transaction template";
+  const hashPrevouts = calculatePrevouts(data.inputs);
+
+  if (currentInput.sequence === "") throw "Sequence must not be empty in transaction template";
+  const nsequence = hexLE(currentInput.sequence);
+
+  // 3 (32-byte hash)
+  const hashSequence = emptyUnit;
+
+  // 4. outpoint (32-byte hash + 4-byte little endian)
+  const outpoint = hexLE(currentInput.previousTxId) + vout;
+  if (outpoint === "") throw "Previous TX ID and Vout must not be empty in transaction template";
+
+  // 5. script code hash
+  const scriptCodeSize = size(scriptCode).hex.substring(0, 2);
+  if (scriptCodeSize === "") throw "scriptPubkey must not be empty in transaction template";
+
+  return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + timelock + "01" + codeSeperator !== ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
 };
 
-const calculateInputAmounts = (inputs: TxInput[]) => {
-  let inputAmounts = "";
+const sighashAnyonecanpay = (data: TxData, codeSeperator: string) => {
+  const currentInput = data.inputs[data.currentInputIndex];
 
-  inputs.forEach((input: TxInput) => {
-    if (input.amount === "") throw "Input amounts must not be empty";
-    inputAmounts += numToLE64(WizData.fromNumber(Number(input.amount) * 100000000)).hex;
-  });
+  if (currentInput.scriptPubKey === "") throw "scriptPubkey must not be empty in transaction template";
 
-  return sha256(WizData.fromHex(inputAmounts)).toString();
-};
+  const scriptCode = WizData.fromHex(currentInput.scriptPubKey);
 
-const calculateInputScriptPubkeys = (inputs: TxInput[]) => {
-  let inputScriptPubkeys = "";
+  if (currentInput.vout === "") throw "Vout must not be empty in transaction template";
+  const vout = numToLE32(WizData.fromNumber(Number(currentInput.vout))).hex;
 
-  inputs.forEach((input: TxInput) => {
-    if (input.scriptPubKey === "") throw "Input script pubkey must not be empty";
+  if (currentInput.amount === "") throw "Amount must not be empty in transaction template";
+  const inputAmount = numToLE64(WizData.fromNumber(Number(currentInput.amount) * 100000000)).hex;
 
-    inputScriptPubkeys += size(WizData.fromHex(input.scriptPubKey)).hex + input.scriptPubKey;
-  });
+  if (data.timelock === "") throw "Timelock must not be empty in transaction template";
+  const timelock = numToLE32(WizData.fromNumber(Number(data.timelock))).hex;
 
-  return sha256(WizData.fromHex(inputScriptPubkeys)).toString();
-};
+  if (data.version === "") throw "Version must not be empty in transaction template";
+  const version = numToLE32(WizData.fromNumber(Number(data.version))).hex;
 
-const calculateInputSequences = (inputs: TxInput[]) => {
-  let inputSequences = "";
+  const hashPrevouts = emptyUnit;
 
-  inputs.forEach((input: TxInput) => {
-    if (input.sequence === "") throw "Input script sequence must not be empty";
+  if (currentInput.sequence === "") throw "Sequence must not be empty in transaction template";
+  const nsequence = hexLE(currentInput.sequence);
 
-    inputSequences += hexLE(input.sequence);
-  });
+  // 3 (32-byte hash)
+  const hashSequence = emptyUnit;
 
-  return sha256(WizData.fromHex(inputSequences)).toString();
-};
+  // 4. outpoint (32-byte hash + 4-byte little endian)
+  const outpoint = hexLE(currentInput.previousTxId) + vout;
+  if (outpoint === "") throw "Previous TX ID and Vout must not be empty in transaction template";
 
-export const taprootSerialization = (data: TxData, script: string, network: VM_NETWORK, sighashType: SIGHASH_TYPE, codeSeperator: string) => {
-  switch (sighashType) {
-    case SIGHASH_TYPE.SIGHASH_ALL:
-      return sighashAllT(data, script, network, codeSeperator);
+  // 5. script code hash
+  const scriptCodeSize = size(scriptCode).hex.substring(0, 2);
+  if (scriptCodeSize === "") throw "scriptPubkey must not be empty in transaction template";
 
-    case SIGHASH_TYPE.SIGHASH_SINGLE:
-      return sighashSingleT(data, script, network, codeSeperator);
+  // 8 hashOutputs
+  const hashOutputs = calculateHashOutputs(data.outputs);
 
-    case SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
-      return sighashAnyonecanpayT(data, script, network, codeSeperator);
-
-    case SIGHASH_TYPE.SIGHASH_NONE:
-      return sighashNoneT(data, script, network, codeSeperator);
-
-    default:
-      return sighashAllT(data, script, network, codeSeperator);
-  }
+  return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
+    ? convert32(WizData.fromHex(codeSeperator)).hex
+    : "ffffffff";
 };
 
 const sighashAllT = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
@@ -260,12 +352,12 @@ const sighashAnyonecanpayT = (data: TxData, script: string, network: VM_NETWORK,
     SIGHASH_TYPE.SIGHASH_ANYONECANPAY +
     version +
     timelock +
+    spendType +
     outpoint +
     amount +
     currentInput.scriptPubKey +
     nSequence +
     outputs +
-    spendType +
     currentIndex +
     tapleaf +
     "00" +
