@@ -127,23 +127,23 @@ const calculateInputSequences = (inputs: TxInput[]) => {
 export const taprootSerialization = (data: TxData, script: string, network: VM_NETWORK, sighashType: SIGHASH_TYPE, codeSeperator: string) => {
   switch (sighashType) {
     case SIGHASH_TYPE.SIGHASH_ALL:
-      return sighashAll(data, script, network, codeSeperator);
+      return sighashAllT(data, script, network, codeSeperator);
 
     case SIGHASH_TYPE.SIGHASH_SINGLE:
-      return sighashSingle(data, script, network, codeSeperator);
+      return sighashSingleT(data, script, network, codeSeperator);
 
     case SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
-      return sighashAnyonecanpay(data, script, network, codeSeperator);
+      return sighashAnyonecanpayT(data, script, network, codeSeperator);
 
     case SIGHASH_TYPE.SIGHASH_NONE:
-      return sighashNone(data, script, network, codeSeperator);
+      return sighashNoneT(data, script, network, codeSeperator);
 
     default:
-      return sighashAll(data, script, network, codeSeperator);
+      return sighashAllT(data, script, network, codeSeperator);
   }
 };
 
-const sighashAll = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
+const sighashAllT = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
   const concat = "00";
 
   if (data.version === "") throw "Version must not be empty in transaction template";
@@ -187,7 +187,7 @@ const sighashAll = (data: TxData, script: string, network: VM_NETWORK, codeSeper
     : "ffffffff";
 };
 
-const sighashSingle = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
+const sighashSingleT = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
   const concat = "00";
 
   if (data.version === "") throw "Version must not be empty in transaction template";
@@ -231,7 +231,7 @@ const sighashSingle = (data: TxData, script: string, network: VM_NETWORK, codeSe
     : "ffffffff";
 };
 
-const sighashAnyonecanpay = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
+const sighashAnyonecanpayT = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
   const concat = "00";
 
   if (data.version === "") throw "Version must not be empty in transaction template";
@@ -275,7 +275,7 @@ const sighashAnyonecanpay = (data: TxData, script: string, network: VM_NETWORK, 
     : "ffffffff";
 };
 
-const sighashNone = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
+const sighashNoneT = (data: TxData, script: string, network: VM_NETWORK, codeSeperator: string) => {
   const concat = "00";
 
   if (data.version === "") throw "Version must not be empty in transaction template";
