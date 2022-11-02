@@ -30,6 +30,7 @@ var crypto_1 = require("./crypto");
 var splices_1 = require("./splices");
 var taproot_1 = require("./taproot");
 var model_1 = require("./taproot/model");
+var serializationutils_1 = require("./utils/serializationutils");
 // ref https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
 // Double SHA256 of the serialization of:
 // 1. nVersion of the transaction (4-byte little endian)
@@ -42,7 +43,37 @@ var model_1 = require("./taproot/model");
 // 8. hashOutputs (32-byte hash)
 // 9. nLocktime of the transaction (4-byte little endian)
 // 10. sighash type of the signature (4-byte little endian)
-var segwitSerialization = function (data) {
+var segwitSerialization = function (data, sighashType, codeSeperator) {
+    switch (sighashType) {
+        case crypto_1.SIGHASH_TYPE.SIGHASH_ALL:
+            return sighashAll(data, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE:
+            return sighashSingle(data, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_NONE:
+            return sighashNone(data, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
+            return sighashAnyonecanpay(data, codeSeperator);
+        default:
+            return sighashAll(data, codeSeperator);
+    }
+};
+exports.segwitSerialization = segwitSerialization;
+var taprootSerialization = function (data, script, network, sighashType, codeSeperator) {
+    switch (sighashType) {
+        case crypto_1.SIGHASH_TYPE.SIGHASH_ALL:
+            return sighashAllT(data, script, network, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE:
+            return sighashSingleT(data, script, network, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
+            return sighashAnyonecanpayT(data, script, network, codeSeperator);
+        case crypto_1.SIGHASH_TYPE.SIGHASH_NONE:
+            return sighashNoneT(data, script, network, codeSeperator);
+        default:
+            return sighashAllT(data, script, network, codeSeperator);
+    }
+};
+exports.taprootSerialization = taprootSerialization;
+var sighashAll = function (data, codeSeperator) {
     var currentInput = data.inputs[data.currentInputIndex];
     if (currentInput.scriptPubKey === "")
         throw "scriptPubkey must not be empty in transaction template";
@@ -62,7 +93,7 @@ var segwitSerialization = function (data) {
     // 2 (32-byte hash)
     if (currentInput.previousTxId === "")
         throw "Previous TX ID must not be empty in transaction template";
-    var hashPrevouts = calculatePrevouts(data.inputs);
+    var hashPrevouts = (0, serializationutils_1.calculatePrevouts)(data.inputs);
     if (currentInput.sequence === "")
         throw "Sequence must not be empty in transaction template";
     var nsequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
@@ -79,74 +110,128 @@ var segwitSerialization = function (data) {
     if (scriptCodeSize === "")
         throw "scriptPubkey must not be empty in transaction template";
     // 8 hashOutputs
-    var hashOutputs = calculateHashOutputs(data.outputs);
-    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01000000";
+    var hashOutputs = (0, serializationutils_1.calculateHashOutputs)(data.outputs);
+    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
 };
-exports.segwitSerialization = segwitSerialization;
-var calculateHashOutputs = function (outputs, isSegwit) {
-    if (isSegwit === void 0) { isSegwit = true; }
-    var hashOutputs = "";
-    outputs.forEach(function (output) {
-        if (output.amount === "" || output.scriptPubKey === "")
-            throw "Amount and scriptPubkey must not be empty in output transaction template";
-        hashOutputs += (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(output.amount) * 100000000)).hex + (0, splices_1.size)(wiz_data_1.default.fromHex(output.scriptPubKey)).hex + output.scriptPubKey;
-    });
-    return isSegwit ? (0, crypto_1.hash256)(wiz_data_1.default.fromHex(hashOutputs)).toString() : (0, crypto_1.sha256)(wiz_data_1.default.fromHex(hashOutputs)).toString();
+var sighashSingle = function (data, codeSeperator) {
+    var currentInput = data.inputs[data.currentInputIndex];
+    if (currentInput.scriptPubKey === "")
+        throw "scriptPubkey must not be empty in transaction template";
+    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
+    if (currentInput.vout === "")
+        throw "Vout must not be empty in transaction template";
+    var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
+    if (currentInput.amount === "")
+        throw "Amount must not be empty in transaction template";
+    var inputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    // 2 (32-byte hash)
+    if (currentInput.previousTxId === "")
+        throw "Previous TX ID must not be empty in transaction template";
+    var hashPrevouts = (0, serializationutils_1.calculatePrevouts)(data.inputs);
+    if (currentInput.sequence === "")
+        throw "Sequence must not be empty in transaction template";
+    var nsequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
+    // 3 (32-byte hash)
+    var hashSequence = serializationutils_1.emptyUnit;
+    // 4. outpoint (32-byte hash + 4-byte little endian)
+    var outpoint = (0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout;
+    if (outpoint === "")
+        throw "Previous TX ID and Vout must not be empty in transaction template";
+    // 5. script code hash
+    var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
+    if (scriptCodeSize === "")
+        throw "scriptPubkey must not be empty in transaction template";
+    var hashOutputs = serializationutils_1.emptyUnit;
+    if (data.currentInputIndex < data.outputs.length)
+        hashOutputs = (0, serializationutils_1.calculateHashOutputs)([data.outputs[data.currentInputIndex]]);
+    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
 };
-var calculatePrevouts = function (inputs, isSegwit) {
-    if (isSegwit === void 0) { isSegwit = true; }
-    var hashInputs = "";
-    inputs.forEach(function (input) {
-        if (input.previousTxId === "" || input.vout === "")
-            throw "Previous tx id and vout must not be empty";
-        var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(input.vout))).hex;
-        hashInputs += wiz_data_1.default.fromHex((0, wiz_data_1.hexLE)(input.previousTxId) + vout).hex;
-    });
-    return isSegwit ? (0, crypto_1.hash256)(wiz_data_1.default.fromHex(hashInputs)).toString() : (0, crypto_1.sha256)(wiz_data_1.default.fromHex(hashInputs)).toString();
+var sighashNone = function (data, codeSeperator) {
+    var currentInput = data.inputs[data.currentInputIndex];
+    if (currentInput.scriptPubKey === "")
+        throw "scriptPubkey must not be empty in transaction template";
+    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
+    if (currentInput.vout === "")
+        throw "Vout must not be empty in transaction template";
+    var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
+    if (currentInput.amount === "")
+        throw "Amount must not be empty in transaction template";
+    var inputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    // 2 (32-byte hash)
+    if (currentInput.previousTxId === "")
+        throw "Previous TX ID must not be empty in transaction template";
+    var hashPrevouts = (0, serializationutils_1.calculatePrevouts)(data.inputs);
+    if (currentInput.sequence === "")
+        throw "Sequence must not be empty in transaction template";
+    var nsequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
+    // 3 (32-byte hash)
+    var hashSequence = serializationutils_1.emptyUnit;
+    // 4. outpoint (32-byte hash + 4-byte little endian)
+    var outpoint = (0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout;
+    if (outpoint === "")
+        throw "Previous TX ID and Vout must not be empty in transaction template";
+    // 5. script code hash
+    var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
+    if (scriptCodeSize === "")
+        throw "scriptPubkey must not be empty in transaction template";
+    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + timelock + "01" + codeSeperator !== ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
 };
-var calculateInputAmounts = function (inputs) {
-    var inputAmounts = "";
-    inputs.forEach(function (input) {
-        if (input.amount === "")
-            throw "Input amounts must not be empty";
-        inputAmounts += (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(input.amount) * 100000000)).hex;
-    });
-    return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputAmounts)).toString();
+var sighashAnyonecanpay = function (data, codeSeperator) {
+    var currentInput = data.inputs[data.currentInputIndex];
+    if (currentInput.scriptPubKey === "")
+        throw "scriptPubkey must not be empty in transaction template";
+    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
+    if (currentInput.vout === "")
+        throw "Vout must not be empty in transaction template";
+    var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
+    if (currentInput.amount === "")
+        throw "Amount must not be empty in transaction template";
+    var inputAmount = (0, convertion_1.numToLE64)(wiz_data_1.default.fromNumber(Number(currentInput.amount) * 100000000)).hex;
+    if (data.timelock === "")
+        throw "Timelock must not be empty in transaction template";
+    var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
+    if (data.version === "")
+        throw "Version must not be empty in transaction template";
+    var version = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.version))).hex;
+    var hashPrevouts = serializationutils_1.emptyUnit;
+    if (currentInput.sequence === "")
+        throw "Sequence must not be empty in transaction template";
+    var nsequence = (0, wiz_data_1.hexLE)(currentInput.sequence);
+    // 3 (32-byte hash)
+    var hashSequence = serializationutils_1.emptyUnit;
+    // 4. outpoint (32-byte hash + 4-byte little endian)
+    var outpoint = (0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout;
+    if (outpoint === "")
+        throw "Previous TX ID and Vout must not be empty in transaction template";
+    // 5. script code hash
+    var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
+    if (scriptCodeSize === "")
+        throw "scriptPubkey must not be empty in transaction template";
+    // 8 hashOutputs
+    var hashOutputs = (0, serializationutils_1.calculateHashOutputs)(data.outputs);
+    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
+        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
+        : "ffffffff";
 };
-var calculateInputScriptPubkeys = function (inputs) {
-    var inputScriptPubkeys = "";
-    inputs.forEach(function (input) {
-        if (input.scriptPubKey === "")
-            throw "Input script pubkey must not be empty";
-        inputScriptPubkeys += (0, splices_1.size)(wiz_data_1.default.fromHex(input.scriptPubKey)).hex + input.scriptPubKey;
-    });
-    return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputScriptPubkeys)).toString();
-};
-var calculateInputSequences = function (inputs) {
-    var inputSequences = "";
-    inputs.forEach(function (input) {
-        if (input.sequence === "")
-            throw "Input script sequence must not be empty";
-        inputSequences += (0, wiz_data_1.hexLE)(input.sequence);
-    });
-    return (0, crypto_1.sha256)(wiz_data_1.default.fromHex(inputSequences)).toString();
-};
-var taprootSerialization = function (data, script, network, sighashType, codeSeperator) {
-    switch (sighashType) {
-        case crypto_1.SIGHASH_TYPE.SIGHASH_ALL:
-            return sighashAll(data, script, network, codeSeperator);
-        case crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE:
-            return sighashSingle(data, script, network, codeSeperator);
-        case crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
-            return sighashAnyonecanpay(data, script, network, codeSeperator);
-        case crypto_1.SIGHASH_TYPE.SIGHASH_NONE:
-            return sighashNone(data, script, network, codeSeperator);
-        default:
-            return sighashAll(data, script, network, codeSeperator);
-    }
-};
-exports.taprootSerialization = taprootSerialization;
-var sighashAll = function (data, script, network, codeSeperator) {
+var sighashAllT = function (data, script, network, codeSeperator) {
     var concat = "00";
     if (data.version === "")
         throw "Version must not be empty in transaction template";
@@ -154,14 +239,14 @@ var sighashAll = function (data, script, network, codeSeperator) {
     if (data.timelock === "")
         throw "Timelock must not be empty in transaction template";
     var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
-    var hashPrevouts = calculatePrevouts(data.inputs, false);
-    var inputAmountsSha = calculateInputAmounts(data.inputs);
-    var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
-    var inputSequencesSha = calculateInputSequences(data.inputs);
+    var hashPrevouts = (0, serializationutils_1.calculatePrevouts)(data.inputs, false);
+    var inputAmountsSha = (0, serializationutils_1.calculateInputAmounts)(data.inputs);
+    var inputPubkeySha = (0, serializationutils_1.calculateInputScriptPubkeys)(data.inputs);
+    var inputSequencesSha = (0, serializationutils_1.calculateInputSequences)(data.inputs);
     var spendType = "02";
     var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
     var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
-    var outputs = calculateHashOutputs(data.outputs, false);
+    var outputs = (0, serializationutils_1.calculateHashOutputs)(data.outputs, false);
     return concat +
         crypto_1.SIGHASH_TYPE.SIGHASH_ALL +
         version +
@@ -180,7 +265,7 @@ var sighashAll = function (data, script, network, codeSeperator) {
         ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
         : "ffffffff";
 };
-var sighashSingle = function (data, script, network, codeSeperator) {
+var sighashSingleT = function (data, script, network, codeSeperator) {
     var concat = "00";
     if (data.version === "")
         throw "Version must not be empty in transaction template";
@@ -188,14 +273,14 @@ var sighashSingle = function (data, script, network, codeSeperator) {
     if (data.timelock === "")
         throw "Timelock must not be empty in transaction template";
     var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
-    var hashPrevouts = calculatePrevouts(data.inputs, false);
-    var inputAmountsSha = calculateInputAmounts(data.inputs);
-    var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
-    var inputSequencesSha = calculateInputSequences(data.inputs);
+    var hashPrevouts = (0, serializationutils_1.calculatePrevouts)(data.inputs, false);
+    var inputAmountsSha = (0, serializationutils_1.calculateInputAmounts)(data.inputs);
+    var inputPubkeySha = (0, serializationutils_1.calculateInputScriptPubkeys)(data.inputs);
+    var inputSequencesSha = (0, serializationutils_1.calculateInputSequences)(data.inputs);
     var spendType = "02";
     var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
     var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
-    var outputs = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+    var outputs = (0, serializationutils_1.calculateHashOutputs)([data.outputs[data.currentInputIndex]], false);
     return concat +
         crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE +
         version +
@@ -214,7 +299,7 @@ var sighashSingle = function (data, script, network, codeSeperator) {
         ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
         : "ffffffff";
 };
-var sighashAnyonecanpay = function (data, script, network, codeSeperator) {
+var sighashAnyonecanpayT = function (data, script, network, codeSeperator) {
     var concat = "00";
     if (data.version === "")
         throw "Version must not be empty in transaction template";
@@ -229,17 +314,17 @@ var sighashAnyonecanpay = function (data, script, network, codeSeperator) {
     var spendType = "02";
     var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
     var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
-    var outputs = calculateHashOutputs([data.outputs[data.currentInputIndex]], false);
+    var outputs = (0, serializationutils_1.calculateHashOutputs)([data.outputs[data.currentInputIndex]], false);
     return concat +
         crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY +
         version +
         timelock +
+        spendType +
         outpoint +
         amount +
         currentInput.scriptPubKey +
         nSequence +
         outputs +
-        spendType +
         currentIndex +
         tapleaf +
         "00" +
@@ -248,7 +333,7 @@ var sighashAnyonecanpay = function (data, script, network, codeSeperator) {
         ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
         : "ffffffff";
 };
-var sighashNone = function (data, script, network, codeSeperator) {
+var sighashNoneT = function (data, script, network, codeSeperator) {
     var concat = "00";
     if (data.version === "")
         throw "Version must not be empty in transaction template";
@@ -256,10 +341,10 @@ var sighashNone = function (data, script, network, codeSeperator) {
     if (data.timelock === "")
         throw "Timelock must not be empty in transaction template";
     var timelock = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(data.timelock))).hex;
-    var hashPrevouts = calculatePrevouts(data.inputs, false);
-    var inputAmountsSha = calculateInputAmounts(data.inputs);
-    var inputPubkeySha = calculateInputScriptPubkeys(data.inputs);
-    var inputSequencesSha = calculateInputSequences(data.inputs);
+    var hashPrevouts = (0, serializationutils_1.calculatePrevouts)(data.inputs, false);
+    var inputAmountsSha = (0, serializationutils_1.calculateInputAmounts)(data.inputs);
+    var inputPubkeySha = (0, serializationutils_1.calculateInputScriptPubkeys)(data.inputs);
+    var inputSequencesSha = (0, serializationutils_1.calculateInputSequences)(data.inputs);
     var spendType = "02";
     var currentIndex = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(data.currentInputIndex)).hex;
     var tapleaf = (0, taproot_1.tapLeaf)(wiz_data_1.default.fromHex(script), network === model_1.VM_NETWORK.BTC ? "c0" : "c4");
