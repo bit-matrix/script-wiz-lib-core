@@ -92,7 +92,7 @@ var checkSig = function (wizData, wizData2, txTemplateData, version, script, cod
         sighashType = wiz_data_1.default.fromNumber(signature.bytes[64]).hex;
     }
     var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT
-        ? (0, serialization_1.segwitSerialization)(txTemplateData, sighashType, codeSeperator)
+        ? (0, serialization_1.segwitSerialization)(txTemplateData, sighashType, script.substring(wiz_data_1.default.fromHex(codeSeperator).number || 0))
         : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network, sighashType, codeSeperator);
     if (version.ver === model_1.VM_NETWORK_VERSION.TAPSCRIPT) {
         var tagHashResult = wiz_data_1.default.fromHex(_1.taproot.tagHash("TapSighash", wiz_data_1.default.fromHex(message)));
@@ -116,7 +116,7 @@ var checkSigAdd = function (wizData, wizData2, wizData3, txTemplateData, version
 exports.checkSigAdd = checkSigAdd;
 var checkMultiSig = function (publicKeyList, signatureList, txTemplateData, version, script, codeSeperator) {
     var message = version.ver === model_1.VM_NETWORK_VERSION.SEGWIT
-        ? (0, serialization_1.segwitSerialization)(txTemplateData, SIGHASH_TYPE.SIGHASH_ALL, codeSeperator)
+        ? (0, serialization_1.segwitSerialization)(txTemplateData, SIGHASH_TYPE.SIGHASH_ALL, script.substring(wiz_data_1.default.fromHex(codeSeperator).number || 0))
         : (0, serialization_1.taprootSerialization)(txTemplateData, script, version.network, SIGHASH_TYPE.SIGHASH_ALL, codeSeperator);
     var hashedMessage = wiz_data_1.default.fromHex((0, exports.sha256)(wiz_data_1.default.fromHex(message)).toString());
     var signResults = [];

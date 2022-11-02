@@ -30,6 +30,7 @@ var crypto_1 = require("./crypto");
 var splices_1 = require("./splices");
 var taproot_1 = require("./taproot");
 var model_1 = require("./taproot/model");
+var utils_1 = require("./utils");
 var serializationutils_1 = require("./utils/serializationutils");
 // ref https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
 // Double SHA256 of the serialization of:
@@ -43,18 +44,18 @@ var serializationutils_1 = require("./utils/serializationutils");
 // 8. hashOutputs (32-byte hash)
 // 9. nLocktime of the transaction (4-byte little endian)
 // 10. sighash type of the signature (4-byte little endian)
-var segwitSerialization = function (data, sighashType, codeSeperator) {
+var segwitSerialization = function (data, sighashType, script) {
     switch (sighashType) {
         case crypto_1.SIGHASH_TYPE.SIGHASH_ALL:
-            return sighashAll(data, codeSeperator);
+            return sighashAll(data, script);
         case crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE:
-            return sighashSingle(data, codeSeperator);
+            return sighashSingle(data, script);
         case crypto_1.SIGHASH_TYPE.SIGHASH_NONE:
-            return sighashNone(data, codeSeperator);
+            return sighashNone(data, script);
         case crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY:
-            return sighashAnyonecanpay(data, codeSeperator);
+            return sighashAnyonecanpay(data, script);
         default:
-            return sighashAll(data, codeSeperator);
+            return sighashAll(data, script);
     }
 };
 exports.segwitSerialization = segwitSerialization;
@@ -73,11 +74,8 @@ var taprootSerialization = function (data, script, network, sighashType, codeSep
     }
 };
 exports.taprootSerialization = taprootSerialization;
-var sighashAll = function (data, codeSeperator) {
+var sighashAll = function (data, script) {
     var currentInput = data.inputs[data.currentInputIndex];
-    if (currentInput.scriptPubKey === "")
-        throw "scriptPubkey must not be empty in transaction template";
-    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
     if (currentInput.vout === "")
         throw "Vout must not be empty in transaction template";
     var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
@@ -106,20 +104,24 @@ var sighashAll = function (data, codeSeperator) {
     if (outpoint === "")
         throw "Previous TX ID and Vout must not be empty in transaction template";
     // 5. script code hash
-    var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
+    var scriptCodeSize = (0, splices_1.size)(wiz_data_1.default.fromHex(script)).hex.substring(0, 2);
     if (scriptCodeSize === "")
         throw "scriptPubkey must not be empty in transaction template";
     // 8 hashOutputs
     var hashOutputs = (0, serializationutils_1.calculateHashOutputs)(data.outputs);
-    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
-        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
-        : "ffffffff";
+    return (version +
+        hashPrevouts +
+        hashSequence +
+        outpoint +
+        (0, utils_1.compactSizeVarIntData)(script) +
+        inputAmount +
+        nsequence +
+        hashOutputs +
+        timelock +
+        (0, convertion_1.convert32)(wiz_data_1.default.fromHex(crypto_1.SIGHASH_TYPE.SIGHASH_ALL)).hex);
 };
-var sighashSingle = function (data, codeSeperator) {
+var sighashSingle = function (data, script) {
     var currentInput = data.inputs[data.currentInputIndex];
-    if (currentInput.scriptPubKey === "")
-        throw "scriptPubkey must not be empty in transaction template";
-    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
     if (currentInput.vout === "")
         throw "Vout must not be empty in transaction template";
     var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
@@ -145,22 +147,22 @@ var sighashSingle = function (data, codeSeperator) {
     var outpoint = (0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout;
     if (outpoint === "")
         throw "Previous TX ID and Vout must not be empty in transaction template";
-    // 5. script code hash
-    var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
-    if (scriptCodeSize === "")
-        throw "scriptPubkey must not be empty in transaction template";
     var hashOutputs = serializationutils_1.emptyUnit;
     if (data.currentInputIndex < data.outputs.length)
         hashOutputs = (0, serializationutils_1.calculateHashOutputs)([data.outputs[data.currentInputIndex]]);
-    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
-        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
-        : "ffffffff";
+    return (version +
+        hashPrevouts +
+        hashSequence +
+        outpoint +
+        (0, utils_1.compactSizeVarIntData)(script) +
+        inputAmount +
+        nsequence +
+        hashOutputs +
+        timelock +
+        (0, convertion_1.convert32)(wiz_data_1.default.fromHex(crypto_1.SIGHASH_TYPE.SIGHASH_SINGLE)).hex);
 };
-var sighashNone = function (data, codeSeperator) {
+var sighashNone = function (data, script) {
     var currentInput = data.inputs[data.currentInputIndex];
-    if (currentInput.scriptPubKey === "")
-        throw "scriptPubkey must not be empty in transaction template";
-    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
     if (currentInput.vout === "")
         throw "Vout must not be empty in transaction template";
     var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
@@ -186,19 +188,18 @@ var sighashNone = function (data, codeSeperator) {
     var outpoint = (0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout;
     if (outpoint === "")
         throw "Previous TX ID and Vout must not be empty in transaction template";
-    // 5. script code hash
-    var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
-    if (scriptCodeSize === "")
-        throw "scriptPubkey must not be empty in transaction template";
-    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + timelock + "01" + codeSeperator !== ""
-        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
-        : "ffffffff";
+    return (version +
+        hashPrevouts +
+        hashSequence +
+        outpoint +
+        (0, utils_1.compactSizeVarIntData)(script) +
+        inputAmount +
+        nsequence +
+        timelock +
+        (0, convertion_1.convert32)(wiz_data_1.default.fromHex(crypto_1.SIGHASH_TYPE.SIGHASH_NONE)).hex);
 };
-var sighashAnyonecanpay = function (data, codeSeperator) {
+var sighashAnyonecanpay = function (data, script) {
     var currentInput = data.inputs[data.currentInputIndex];
-    if (currentInput.scriptPubKey === "")
-        throw "scriptPubkey must not be empty in transaction template";
-    var scriptCode = wiz_data_1.default.fromHex(currentInput.scriptPubKey);
     if (currentInput.vout === "")
         throw "Vout must not be empty in transaction template";
     var vout = (0, convertion_1.numToLE32)(wiz_data_1.default.fromNumber(Number(currentInput.vout))).hex;
@@ -221,15 +222,18 @@ var sighashAnyonecanpay = function (data, codeSeperator) {
     var outpoint = (0, wiz_data_1.hexLE)(currentInput.previousTxId) + vout;
     if (outpoint === "")
         throw "Previous TX ID and Vout must not be empty in transaction template";
-    // 5. script code hash
-    var scriptCodeSize = (0, splices_1.size)(scriptCode).hex.substring(0, 2);
-    if (scriptCodeSize === "")
-        throw "scriptPubkey must not be empty in transaction template";
     // 8 hashOutputs
     var hashOutputs = (0, serializationutils_1.calculateHashOutputs)(data.outputs);
-    return version + hashPrevouts + hashSequence + outpoint + scriptCodeSize + scriptCode.hex + inputAmount + nsequence + hashOutputs + timelock + "01" + codeSeperator !== ""
-        ? (0, convertion_1.convert32)(wiz_data_1.default.fromHex(codeSeperator)).hex
-        : "ffffffff";
+    return (version +
+        hashPrevouts +
+        hashSequence +
+        outpoint +
+        (0, utils_1.compactSizeVarIntData)(script) +
+        inputAmount +
+        nsequence +
+        hashOutputs +
+        timelock +
+        (0, convertion_1.convert32)(wiz_data_1.default.fromHex(crypto_1.SIGHASH_TYPE.SIGHASH_ANYONECANPAY)).hex);
 };
 var sighashAllT = function (data, script, network, codeSeperator) {
     var concat = "00";
